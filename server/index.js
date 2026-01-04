@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { initializeDatabase, seedBDASubject } from './database.js';
+import { initializeDatabase, seedBDASubject, migrateQuestionsSubjectId } from './database.js';
 import routes from './routes.js';
 
 const app = express();
@@ -84,6 +84,9 @@ async function startServer() {
 
     // Seed BDA subject (Fase 0)
     seedBDASubject();
+
+    // Migrate questions to include subject_id (Fase 1)
+    migrateQuestionsSubjectId();
 
     // Start listening
     app.listen(PORT, () => {

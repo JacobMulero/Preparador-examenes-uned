@@ -22,6 +22,7 @@ const mockGetAllTopics = jest.fn();
 const mockGetRandomQuestion = jest.fn();
 const mockGetNextUnansweredQuestion = jest.fn();
 const mockUpsertQuestion = jest.fn();
+const mockGetSubjectById = jest.fn(() => ({ id: 'bda', name: 'BDA', short_name: 'BDA' }));
 
 jest.unstable_mockModule('../../server/database.js', () => ({
   db: mockDb,
@@ -37,7 +38,8 @@ jest.unstable_mockModule('../../server/database.js', () => ({
   getAllTopics: mockGetAllTopics,
   getRandomQuestion: mockGetRandomQuestion,
   getNextUnansweredQuestion: mockGetNextUnansweredQuestion,
-  upsertQuestion: mockUpsertQuestion
+  upsertQuestion: mockUpsertQuestion,
+  getSubjectById: mockGetSubjectById
 }));
 
 // Mock claudeService

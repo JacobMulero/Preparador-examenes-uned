@@ -40,9 +40,10 @@ function initializeDatabase() {
  */
 function upsertQuestion(question) {
   const stmt = db.prepare(`
-    INSERT INTO questions (id, topic, question_number, shared_statement, content, options, parsed_at)
-    VALUES (@id, @topic, @question_number, @shared_statement, @content, @options, CURRENT_TIMESTAMP)
+    INSERT INTO questions (id, subject_id, topic, question_number, shared_statement, content, options, parsed_at)
+    VALUES (@id, @subject_id, @topic, @question_number, @shared_statement, @content, @options, CURRENT_TIMESTAMP)
     ON CONFLICT(id) DO UPDATE SET
+      subject_id = @subject_id,
       topic = @topic,
       question_number = @question_number,
       shared_statement = @shared_statement,
@@ -53,6 +54,7 @@ function upsertQuestion(question) {
 
   return stmt.run({
     id: question.id,
+    subject_id: question.subject_id || 'bda',
     topic: question.topic,
     question_number: question.question_number,
     shared_statement: question.shared_statement || null,
@@ -64,12 +66,13 @@ function upsertQuestion(question) {
 /**
  * Get all questions for a topic
  * @param {string} topic - Topic identifier
+ * @param {string} subjectId - Subject ID (default: 'bda')
  */
-function getQuestionsByTopic(topic) {
+function getQuestionsByTopic(topic, subjectId = 'bda') {
   const stmt = db.prepare(`
-    SELECT * FROM questions WHERE topic = ? ORDER BY question_number
+    SELECT * FROM questions WHERE topic = ? AND subject_id = ? ORDER BY question_number
   `);
-  const rows = stmt.all(topic);
+  const rows = stmt.all(topic, subjectId);
   return rows.map(row => ({
     ...row,
     options: JSON.parse(row.options)
@@ -79,10 +82,19 @@ function getQuestionsByTopic(topic) {
 /**
  * Get a single question by ID
  * @param {string} id - Question ID
+ * @param {string} subjectId - Subject ID (optional, if not provided, returns any matching question)
  */
-function getQuestionById(id) {
-  const stmt = db.prepare(`SELECT * FROM questions WHERE id = ?`);
-  const row = stmt.get(id);
+function getQuestionById(id, subjectId = null) {
+  let query = 'SELECT * FROM questions WHERE id = ?';
+  const params = [id];
+
+  if (subjectId) {
+    query += ' AND subject_id = ?';
+    params.push(subjectId);
+  }
+
+  const stmt = db.prepare(query);
+  const row = stmt.get(...params);
   if (row) {
     row.options = JSON.parse(row.options);
   }
@@ -91,35 +103,38 @@ function getQuestionById(id) {
 
 /**
  * Get all distinct topics
+ * @param {string} subjectId - Subject ID (default: 'bda')
  */
-function getAllTopics() {
+function getAllTopics(subjectId = 'bda') {
   const stmt = db.prepare(`
     SELECT DISTINCT topic, COUNT(*) as question_count
     FROM questions
+    WHERE subject_id = ?
     GROUP BY topic
     ORDER BY topic
   `);
-  return stmt.all();
+  return stmt.all(subjectId);
 }
 
 /**
  * Get a random question from a topic
  * @param {string} topic - Topic identifier (optional, all topics if null)
+ * @param {string} subjectId - Subject ID (default: 'bda')
  */
-function getRandomQuestion(topic = null) {
+function getRandomQuestion(topic = null, subjectId = 'bda') {
   let stmt;
   if (topic) {
     stmt = db.prepare(`
-      SELECT * FROM questions WHERE topic = ? ORDER BY RANDOM() LIMIT 1
+      SELECT * FROM questions WHERE topic = ? AND subject_id = ? ORDER BY RANDOM() LIMIT 1
     `);
-    const row = stmt.get(topic);
+    const row = stmt.get(topic, subjectId);
     if (row) row.options = JSON.parse(row.options);
     return row;
   } else {
     stmt = db.prepare(`
-      SELECT * FROM questions ORDER BY RANDOM() LIMIT 1
+      SELECT * FROM questions WHERE subject_id = ? ORDER BY RANDOM() LIMIT 1
     `);
-    const row = stmt.get();
+    const row = stmt.get(subjectId);
     if (row) row.options = JSON.parse(row.options);
     return row;
   }
@@ -128,16 +143,17 @@ function getRandomQuestion(topic = null) {
 /**
  * Get next unanswered question for a topic
  * @param {string} topic - Topic identifier
+ * @param {string} subjectId - Subject ID (default: 'bda')
  */
-function getNextUnansweredQuestion(topic) {
+function getNextUnansweredQuestion(topic, subjectId = 'bda') {
   const stmt = db.prepare(`
     SELECT q.* FROM questions q
     LEFT JOIN attempts a ON q.id = a.question_id
-    WHERE q.topic = ? AND a.id IS NULL
+    WHERE q.topic = ? AND q.subject_id = ? AND a.id IS NULL
     ORDER BY q.question_number
     LIMIT 1
   `);
-  const row = stmt.get(topic);
+  const row = stmt.get(topic, subjectId);
   if (row) row.options = JSON.parse(row.options);
   return row;
 }
@@ -504,10 +520,33 @@ function seedBDASubject() {
   return getSubjectById('bda');
 }
 
+/**
+ * Migration: Add subject_id to questions table if not exists
+ * Migrates existing questions to BDA subject
+ */
+function migrateQuestionsSubjectId() {
+  try {
+    // Check if subject_id column exists
+    const tableInfo = db.pragma('table_info(questions)');
+    const hasSubjectId = tableInfo.some(col => col.name === 'subject_id');
+
+    if (!hasSubjectId) {
+      console.log('[Database] Adding subject_id column to questions...');
+      db.exec(`ALTER TABLE questions ADD COLUMN subject_id TEXT DEFAULT 'bda'`);
+      console.log('[Database] Migrating existing questions to BDA subject...');
+      db.exec(`UPDATE questions SET subject_id = 'bda' WHERE subject_id IS NULL`);
+      console.log('[Database] Migration completed successfully');
+    }
+  } catch (error) {
+    console.error('[Database] Migration error:', error.message);
+  }
+}
+
 // Export database instance and helper functions
 export {
   db,
   initializeDatabase,
+  migrateQuestionsSubjectId,
   // Questions
   upsertQuestion,
   getQuestionsByTopic,

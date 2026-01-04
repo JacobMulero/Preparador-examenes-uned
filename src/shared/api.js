@@ -188,10 +188,49 @@ export const subjectsApi = {
     return res;
   },
 
-  // Get topics for a subject
+  // Get topics for a subject (Fase 1: subject-aware)
   getSubjectTopics: async (subjectId) => {
     const res = await api.get(`/subjects/${subjectId}/topics`);
-    return res;
+    return {
+      ...res,
+      data: res.data
+    };
+  },
+
+  // Get questions for a topic in a subject (Fase 1)
+  getSubjectQuestions: async (subjectId, topicId) => {
+    const res = await api.get(`/subjects/${subjectId}/questions/${topicId}`);
+    return {
+      ...res,
+      data: (res.data?.data || []).map(transformQuestion)
+    };
+  },
+
+  // Get random question for a topic in a subject (Fase 1)
+  getSubjectRandomQuestion: async (subjectId, topicId) => {
+    const res = await api.get(`/subjects/${subjectId}/questions/${topicId}/random`);
+    return {
+      ...res,
+      data: res.data?.data ? transformQuestion(res.data.data) : null
+    };
+  },
+
+  // Get next unanswered question for a topic in a subject (Fase 1)
+  getSubjectNextQuestion: async (subjectId, topicId) => {
+    const res = await api.get(`/subjects/${subjectId}/questions/${topicId}/next`);
+    return {
+      ...res,
+      data: res.data?.data ? transformQuestion(res.data.data) : null
+    };
+  },
+
+  // Get specific question by ID for a subject (Fase 1)
+  getSubjectQuestion: async (subjectId, questionId) => {
+    const res = await api.get(`/subjects/${subjectId}/question/${questionId}`);
+    return {
+      ...res,
+      data: res.data?.data ? transformQuestion(res.data.data) : null
+    };
   },
 
   // Create a subject

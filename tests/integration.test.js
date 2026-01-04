@@ -145,14 +145,54 @@ async function runTests() {
     assert(data.subject.id === 'bda', 'should return bda subject info');
     assert(Array.isArray(data.topics), 'topics should be an array');
     assert(data.topics.length >= 7, 'should have at least 7 topics');
-    const tema1 = data.topics.find(t => t.id === 'bda_tema1');
-    assert(tema1, 'should have bda_tema1');
-    assert(tema1.name === 'Query Processing', 'tema1 should have correct name');
+    const tema1 = data.topics.find(t => t.name === 'Tema1');
+    assert(tema1, 'should have Tema1 topic');
+    assert(tema1.id === 'bda_tema1', 'tema1 should have correct id');
   })) passed++; else failed++;
 
   // Non-existent subject
   if (await test('Subject detail returns 404 for non-existent subject', async () => {
     const response = await fetch(`${BASE_URL}/api/subjects/nonexistent`, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    assert(response.status === 404, 'should return 404');
+    const data = await response.json();
+    assert(data.success === false, 'success should be false');
+  })) passed++; else failed++;
+
+  // ============================================
+  // Fase 1: Subject-Aware Questions Tests
+  // ============================================
+
+  // Get questions for a topic (subject-aware)
+  if (await test('Subject questions endpoint returns questions for BDA/Tema1', async () => {
+    const data = await fetchJSON('/api/subjects/bda/questions/Tema1');
+    assert(data.success === true, 'success should be true');
+    assert(data.subject.id === 'bda', 'should return bda subject');
+    assert(data.topic === 'Tema1', 'should return Tema1');
+    assert(Array.isArray(data.data), 'data should be an array');
+    assert(data.data.length > 0, 'should have questions');
+  })) passed++; else failed++;
+
+  // Get random question (subject-aware)
+  if (await test('Subject random question endpoint returns question for BDA/Tema1', async () => {
+    const data = await fetchJSON('/api/subjects/bda/questions/Tema1/random');
+    assert(data.success === true, 'success should be true');
+    assert(data.data.id, 'should have question id');
+    assert(data.data.content, 'should have content');
+    assert(data.data.options, 'should have options');
+  })) passed++; else failed++;
+
+  // Get next question (subject-aware)
+  if (await test('Subject next question endpoint returns question for BDA/Tema1', async () => {
+    const data = await fetchJSON('/api/subjects/bda/questions/Tema1/next');
+    assert(data.success === true, 'success should be true');
+    assert(data.data.id, 'should have question id');
+  })) passed++; else failed++;
+
+  // Non-existent subject for questions
+  if (await test('Subject questions returns 404 for non-existent subject', async () => {
+    const response = await fetch(`${BASE_URL}/api/subjects/nonexistent/questions/Tema1`, {
       headers: { 'Content-Type': 'application/json' }
     });
     assert(response.status === 404, 'should return 404');

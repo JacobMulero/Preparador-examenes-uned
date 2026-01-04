@@ -139,37 +139,7 @@ router.put('/:id', (req, res) => {
   }
 });
 
-/**
- * GET /api/subjects/:id/topics
- * Get topics for a subject
- */
-router.get('/:id/topics', (req, res) => {
-  try {
-    const subject = getSubjectById(req.params.id);
-    if (!subject) {
-      return res.status(404).json({
-        success: false,
-        error: 'Asignatura no encontrada'
-      });
-    }
-
-    const topics = getTopicsBySubject(req.params.id);
-
-    res.json({
-      success: true,
-      subject: {
-        id: subject.id,
-        name: subject.name
-      },
-      topics
-    });
-  } catch (error) {
-    console.error('Error fetching topics:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Error al obtener temas'
-    });
-  }
-});
+// NOTE: Topics route moved to questions.js for subject-aware handling (Fase 1)
+// GET /api/subjects/:id/topics is now handled in questions.js
 
 export default router;

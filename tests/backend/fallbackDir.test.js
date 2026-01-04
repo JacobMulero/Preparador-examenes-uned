@@ -51,7 +51,8 @@ describe('FALLBACK_DIR branch coverage', () => {
       getQuestionById: jest.fn(),
       getAllTopics: jest.fn(() => []),
       getRandomQuestion: jest.fn(),
-      getNextUnansweredQuestion: jest.fn()
+      getNextUnansweredQuestion: jest.fn(),
+      getSubjectById: jest.fn(() => ({ id: 'bda', name: 'BDA' }))
     }));
 
     // Mock questionParser
@@ -109,7 +110,8 @@ describe('FALLBACK_DIR branch coverage', () => {
       getQuestionById: jest.fn(),
       getAllTopics: jest.fn(() => []),
       getRandomQuestion: jest.fn(),
-      getNextUnansweredQuestion: jest.fn()
+      getNextUnansweredQuestion: jest.fn(),
+      getSubjectById: jest.fn(() => ({ id: 'bda', name: 'BDA' }))
     }));
 
     // Mock questionParser to throw (simulating directory not found)

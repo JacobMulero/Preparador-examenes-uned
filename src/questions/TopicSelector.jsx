@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { questionsApi, progressApi } from '../shared/api';
+import { Link, useParams } from 'react-router-dom';
+import { questionsApi, progressApi, subjectsApi } from '../shared/api';
 import ProgressBar from '../progress/ProgressBar';
 import StatsPanel from '../progress/StatsPanel';
 import './TopicSelector.css';
 
-// Topic metadata with descriptions
+// Topic metadata with descriptions (fallback for BDA)
 const topicDescriptions = {
   'Tema1': 'Query Processing - Cost estimation, selection algorithms, sorting, join algorithms',
   'Tema2': 'Query Optimization - Catalog statistics, equivalence rules, cost-based optimization',
@@ -18,6 +18,9 @@ const topicDescriptions = {
 };
 
 function TopicSelector() {
+  const { subjectId: urlSubjectId } = useParams();
+  const subjectId = urlSubjectId || 'bda';
+
   const [topics, setTopics] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,20 +28,22 @@ function TopicSelector() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [subjectId]);
 
   const loadData = async () => {
     setLoading(true);
     setError(null);
 
     try {
+      // Use subject-aware API (Fase 1)
       const [topicsRes, statsRes] = await Promise.all([
-        questionsApi.getTopics(),
+        subjectsApi.getSubjectTopics(subjectId),
         progressApi.getStats(),
       ]);
 
-      // API layer already transforms the data
-      setTopics(topicsRes.data || []);
+      // Transform topics from API response
+      const topicsData = topicsRes.data?.topics || [];
+      setTopics(topicsData);
       setStats(statsRes.data || null);
     } catch (err) {
       console.error('Error loading data:', err);
@@ -92,17 +97,18 @@ function TopicSelector() {
 
       <div className="topics-grid">
         {topics.map((topic) => {
-          const description = topicDescriptions[topic.id] || topic.name;
+          // Use topic.name for description lookup (Tema1, Tema2, etc.)
+          const description = topicDescriptions[topic.name] || topic.name;
 
           return (
             <Link
               key={topic.id}
-              to={`/topic/${topic.id}`}
+              to={`/subjects/${subjectId}/topic/${topic.name}`}
               className="topic-card"
             >
               <div className="topic-card-header">
                 <span className="topic-number">
-                  {topic.id.replace('Tema', 'T').replace('SinTema', 'Mix')}
+                  {topic.name.replace('Tema', 'T').replace('SinTema', 'Mix')}
                 </span>
                 <span className="topic-count">{topic.questionCount} preguntas</span>
               </div>

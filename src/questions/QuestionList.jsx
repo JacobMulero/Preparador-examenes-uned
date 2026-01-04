@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { questionsApi, solvingApi, progressApi } from '../shared/api';
+import { questionsApi, solvingApi, progressApi, subjectsApi } from '../shared/api';
 import QuestionCard from './QuestionCard';
 import SolveButton from '../solving/SolveButton';
 import AnswerPanel from '../solving/AnswerPanel';
@@ -8,7 +8,8 @@ import ProgressBar from '../progress/ProgressBar';
 import './QuestionList.css';
 
 function QuestionList() {
-  const { topicId } = useParams();
+  const { subjectId: urlSubjectId, topicId } = useParams();
+  const subjectId = urlSubjectId || 'bda';
 
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -24,15 +25,16 @@ function QuestionList() {
   // Load questions and stats
   useEffect(() => {
     loadQuestions();
-  }, [topicId]);
+  }, [subjectId, topicId]);
 
   const loadQuestions = async () => {
     setLoading(true);
     setError(null);
 
     try {
+      // Use subject-aware API (Fase 1)
       const [questionsRes, statsRes] = await Promise.all([
-        questionsApi.getQuestions(topicId),
+        subjectsApi.getSubjectQuestions(subjectId, topicId),
         progressApi.getTopicStats(topicId),
       ]);
 
@@ -148,12 +150,15 @@ function QuestionList() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentIndex, questions.length, selectedAnswer, result, solving]);
 
+  // Back link URL
+  const backUrl = `/subjects/${subjectId}`;
+
   // Loading state
   if (loading) {
     return (
       <div className="question-list">
         <div className="question-list-header">
-          <Link to="/" className="back-link">← Volver</Link>
+          <Link to={backUrl} className="back-link">Volver</Link>
           <h1 className="topic-title">{topicId}</h1>
         </div>
         <div className="card question-card-skeleton">
@@ -170,7 +175,7 @@ function QuestionList() {
     return (
       <div className="question-list">
         <div className="question-list-header">
-          <Link to="/" className="back-link">← Volver</Link>
+          <Link to={backUrl} className="back-link">Volver</Link>
           <h1 className="topic-title">{topicId}</h1>
         </div>
         <div className="alert alert-error">{error}</div>
@@ -186,7 +191,7 @@ function QuestionList() {
     return (
       <div className="question-list">
         <div className="question-list-header">
-          <Link to="/" className="back-link">← Volver</Link>
+          <Link to={backUrl} className="back-link">Volver</Link>
           <h1 className="topic-title">{topicId}</h1>
         </div>
         <div className="card">
@@ -204,7 +209,7 @@ function QuestionList() {
     <div className="question-list">
       {/* Header */}
       <div className="question-list-header">
-        <Link to="/" className="back-link">← Volver</Link>
+        <Link to={backUrl} className="back-link">Volver</Link>
         <h1 className="topic-title">{topicId.replace('Tema', 'Tema ')}</h1>
         {topicStats && (
           <div className="topic-quick-stats">

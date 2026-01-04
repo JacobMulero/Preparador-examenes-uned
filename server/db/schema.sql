@@ -39,12 +39,14 @@ CREATE INDEX IF NOT EXISTS idx_topics_subject ON topics(subject_id);
 -- Questions table: stores parsed questions from markdown files
 CREATE TABLE IF NOT EXISTS questions (
   id TEXT PRIMARY KEY,                    -- Format: "tema1_pregunta5"
+  subject_id TEXT DEFAULT 'bda',          -- Subject ID (Fase 1: multi-subject)
   topic TEXT NOT NULL,                    -- Topic identifier: "Tema1", "Tema2", etc.
   question_number INTEGER NOT NULL,       -- Question number within the topic
   shared_statement TEXT,                  -- Shared statement if multiple questions share context
   content TEXT NOT NULL,                  -- Full question text
   options TEXT NOT NULL,                  -- JSON array of options: {"a": "...", "b": "...", ...}
-  parsed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  parsed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
 );
 
 -- Attempts table: records user answer attempts
@@ -73,3 +75,4 @@ CREATE TABLE IF NOT EXISTS solutions_cache (
 CREATE INDEX IF NOT EXISTS idx_attempts_question ON attempts(question_id);
 CREATE INDEX IF NOT EXISTS idx_attempts_correct ON attempts(is_correct);
 CREATE INDEX IF NOT EXISTS idx_questions_topic ON questions(topic);
+CREATE INDEX IF NOT EXISTS idx_questions_subject ON questions(subject_id);
