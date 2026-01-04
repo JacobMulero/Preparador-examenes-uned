@@ -200,6 +200,27 @@ async function runTests() {
     assert(data.success === false, 'success should be false');
   })) passed++; else failed++;
 
+  // ============================================
+  // Fase 2: Pipeline Tests
+  // ============================================
+
+  // List exams (should be empty initially)
+  if (await test('Pipeline exams endpoint returns empty list', async () => {
+    const data = await fetchJSON('/api/pipeline/exams?subjectId=bda');
+    assert(data.success === true, 'success should be true');
+    assert(Array.isArray(data.data), 'data should be an array');
+  })) passed++; else failed++;
+
+  // Missing subjectId returns error
+  if (await test('Pipeline exams requires subjectId', async () => {
+    const response = await fetch(`${BASE_URL}/api/pipeline/exams`, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    assert(response.status === 400, 'should return 400');
+    const data = await response.json();
+    assert(data.success === false, 'success should be false');
+  })) passed++; else failed++;
+
   console.log(`\n📊 Results: ${passed} passed, ${failed} failed\n`);
 
   return failed === 0;

@@ -52,6 +52,11 @@ function SubjectDashboard() {
           <Link to="/" className="back-link">Cambiar asignatura</Link>
           <h1>{subject.name}</h1>
           <p className="subject-description">{subject.description}</p>
+          <div className="subject-actions">
+            <Link to={`/pipeline/${subjectId}`} className="btn btn-secondary btn-sm">
+              Pipeline PDFs
+            </Link>
+          </div>
         </div>
         <TopicSelector />
       </div>

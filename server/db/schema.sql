@@ -76,3 +76,58 @@ CREATE INDEX IF NOT EXISTS idx_attempts_question ON attempts(question_id);
 CREATE INDEX IF NOT EXISTS idx_attempts_correct ON attempts(is_correct);
 CREATE INDEX IF NOT EXISTS idx_questions_topic ON questions(topic);
 CREATE INDEX IF NOT EXISTS idx_questions_subject ON questions(subject_id);
+
+-- ============================================
+-- FASE 2: PDF Pipeline
+-- ============================================
+
+-- PDFs de exámenes subidos
+CREATE TABLE IF NOT EXISTS exam_pdfs (
+  id TEXT PRIMARY KEY,
+  subject_id TEXT NOT NULL,
+  filename TEXT NOT NULL,
+  original_path TEXT NOT NULL,
+  page_count INTEGER,
+  status TEXT DEFAULT 'uploaded',         -- uploaded, extracting, parsing, completed, error
+  error_message TEXT,
+  uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  processed_at DATETIME,
+  FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
+);
+
+-- Páginas individuales de PDFs
+CREATE TABLE IF NOT EXISTS exam_pages (
+  id TEXT PRIMARY KEY,
+  exam_id TEXT NOT NULL,
+  page_number INTEGER NOT NULL,
+  image_path TEXT,
+  raw_markdown TEXT,                      -- Output directo de Vision
+  processed_markdown TEXT,                -- Normalizado
+  status TEXT DEFAULT 'pending',          -- pending, processing, completed, error
+  vision_tokens INTEGER,
+  processed_at DATETIME,
+  FOREIGN KEY (exam_id) REFERENCES exam_pdfs(id) ON DELETE CASCADE
+);
+
+-- Preguntas parseadas (antes de revisión)
+CREATE TABLE IF NOT EXISTS parsed_questions (
+  id TEXT PRIMARY KEY,
+  exam_id TEXT NOT NULL,
+  page_id TEXT,
+  question_number INTEGER,
+  raw_content TEXT NOT NULL,
+  normalized_content TEXT,
+  options TEXT,                           -- JSON: {a, b, c, d}
+  status TEXT DEFAULT 'pending',          -- pending, reviewed, approved, rejected
+  reviewer_notes TEXT,
+  reviewed_at DATETIME,
+  FOREIGN KEY (exam_id) REFERENCES exam_pdfs(id) ON DELETE CASCADE,
+  FOREIGN KEY (page_id) REFERENCES exam_pages(id) ON DELETE SET NULL
+);
+
+-- Indexes for PDF pipeline
+CREATE INDEX IF NOT EXISTS idx_exam_pdfs_subject ON exam_pdfs(subject_id);
+CREATE INDEX IF NOT EXISTS idx_exam_pdfs_status ON exam_pdfs(status);
+CREATE INDEX IF NOT EXISTS idx_exam_pages_exam ON exam_pages(exam_id);
+CREATE INDEX IF NOT EXISTS idx_parsed_questions_exam ON parsed_questions(exam_id);
+CREATE INDEX IF NOT EXISTS idx_parsed_questions_status ON parsed_questions(status);

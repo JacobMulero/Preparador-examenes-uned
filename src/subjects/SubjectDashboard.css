@@ -44,6 +44,14 @@
   font-size: 0.95rem;
 }
 
+.subject-actions {
+  margin-top: 1rem;
+}
+
+.subject-actions .btn {
+  margin-right: 0.5rem;
+}
+
 .coming-soon {
   text-align: center;
   padding: 3rem;

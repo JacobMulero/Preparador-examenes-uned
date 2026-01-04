@@ -542,6 +542,279 @@ function migrateQuestionsSubjectId() {
   }
 }
 
+// ============================================
+// PDF Pipeline Helper Functions (Fase 2)
+// ============================================
+
+/**
+ * Create a new exam PDF record
+ * @param {Object} examPdf - Exam PDF data
+ */
+function createExamPdf(examPdf) {
+  const stmt = db.prepare(`
+    INSERT INTO exam_pdfs (id, subject_id, filename, original_path, page_count, status)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+  stmt.run(
+    examPdf.id,
+    examPdf.subjectId,
+    examPdf.filename,
+    examPdf.originalPath,
+    examPdf.pageCount || null,
+    examPdf.status || 'uploaded'
+  );
+  return getExamPdf(examPdf.id);
+}
+
+/**
+ * Get exam PDF by ID
+ * @param {string} examId - Exam PDF ID
+ */
+function getExamPdf(examId) {
+  const stmt = db.prepare('SELECT * FROM exam_pdfs WHERE id = ?');
+  return stmt.get(examId);
+}
+
+/**
+ * Get all exam PDFs for a subject
+ * @param {string} subjectId - Subject ID
+ */
+function getExamPdfsBySubject(subjectId) {
+  const stmt = db.prepare(`
+    SELECT * FROM exam_pdfs WHERE subject_id = ? ORDER BY uploaded_at DESC
+  `);
+  return stmt.all(subjectId);
+}
+
+/**
+ * Update exam PDF status
+ * @param {string} examId - Exam PDF ID
+ * @param {string} status - New status
+ * @param {string} errorMessage - Error message (optional)
+ */
+function updateExamPdfStatus(examId, status, errorMessage = null) {
+  const stmt = db.prepare(`
+    UPDATE exam_pdfs
+    SET status = ?, error_message = ?, processed_at = CASE WHEN ? IN ('completed', 'error') THEN CURRENT_TIMESTAMP ELSE processed_at END
+    WHERE id = ?
+  `);
+  stmt.run(status, errorMessage, status, examId);
+  return getExamPdf(examId);
+}
+
+/**
+ * Update exam PDF page count
+ * @param {string} examId - Exam PDF ID
+ * @param {number} pageCount - Number of pages
+ */
+function updateExamPdfPageCount(examId, pageCount) {
+  const stmt = db.prepare('UPDATE exam_pdfs SET page_count = ? WHERE id = ?');
+  stmt.run(pageCount, examId);
+  return getExamPdf(examId);
+}
+
+/**
+ * Create an exam page record
+ * @param {Object} page - Page data
+ */
+function createExamPage(page) {
+  const stmt = db.prepare(`
+    INSERT INTO exam_pages (id, exam_id, page_number, image_path, status)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+  stmt.run(page.id, page.examId, page.pageNumber, page.imagePath, page.status || 'pending');
+  return getExamPage(page.id);
+}
+
+/**
+ * Get exam page by ID
+ * @param {string} pageId - Page ID
+ */
+function getExamPage(pageId) {
+  const stmt = db.prepare('SELECT * FROM exam_pages WHERE id = ?');
+  return stmt.get(pageId);
+}
+
+/**
+ * Get all pages for an exam
+ * @param {string} examId - Exam PDF ID
+ */
+function getExamPages(examId) {
+  const stmt = db.prepare('SELECT * FROM exam_pages WHERE exam_id = ? ORDER BY page_number');
+  return stmt.all(examId);
+}
+
+/**
+ * Update exam page with Vision results
+ * @param {string} pageId - Page ID
+ * @param {Object} data - Update data
+ */
+function updateExamPage(pageId, data) {
+  const fields = [];
+  const values = [];
+
+  if (data.rawMarkdown !== undefined) {
+    fields.push('raw_markdown = ?');
+    values.push(data.rawMarkdown);
+  }
+  if (data.processedMarkdown !== undefined) {
+    fields.push('processed_markdown = ?');
+    values.push(data.processedMarkdown);
+  }
+  if (data.status !== undefined) {
+    fields.push('status = ?');
+    values.push(data.status);
+  }
+  if (data.visionTokens !== undefined) {
+    fields.push('vision_tokens = ?');
+    values.push(data.visionTokens);
+  }
+  if (data.status === 'completed' || data.status === 'error') {
+    fields.push('processed_at = CURRENT_TIMESTAMP');
+  }
+
+  if (fields.length === 0) return getExamPage(pageId);
+
+  values.push(pageId);
+  const stmt = db.prepare(`UPDATE exam_pages SET ${fields.join(', ')} WHERE id = ?`);
+  stmt.run(...values);
+  return getExamPage(pageId);
+}
+
+/**
+ * Create a parsed question record
+ * @param {Object} question - Parsed question data
+ */
+function createParsedQuestion(question) {
+  const stmt = db.prepare(`
+    INSERT INTO parsed_questions (id, exam_id, page_id, question_number, raw_content, normalized_content, options, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  stmt.run(
+    question.id,
+    question.examId,
+    question.pageId || null,
+    question.questionNumber,
+    question.rawContent,
+    question.normalizedContent || null,
+    question.options ? JSON.stringify(question.options) : null,
+    question.status || 'pending'
+  );
+  return getParsedQuestion(question.id);
+}
+
+/**
+ * Get parsed question by ID
+ * @param {string} questionId - Parsed question ID
+ */
+function getParsedQuestion(questionId) {
+  const stmt = db.prepare('SELECT * FROM parsed_questions WHERE id = ?');
+  const row = stmt.get(questionId);
+  if (row && row.options) {
+    row.options = JSON.parse(row.options);
+  }
+  return row;
+}
+
+/**
+ * Get all parsed questions for an exam
+ * @param {string} examId - Exam PDF ID
+ */
+function getParsedQuestionsByExam(examId) {
+  const stmt = db.prepare('SELECT * FROM parsed_questions WHERE exam_id = ? ORDER BY question_number');
+  return stmt.all(examId).map(row => ({
+    ...row,
+    options: row.options ? JSON.parse(row.options) : null
+  }));
+}
+
+/**
+ * Get parsed questions by status
+ * @param {string} status - Status filter
+ * @param {string} examId - Exam ID (optional)
+ */
+function getParsedQuestionsByStatus(status, examId = null) {
+  let query = 'SELECT * FROM parsed_questions WHERE status = ?';
+  const params = [status];
+
+  if (examId) {
+    query += ' AND exam_id = ?';
+    params.push(examId);
+  }
+
+  query += ' ORDER BY question_number';
+
+  const stmt = db.prepare(query);
+  return stmt.all(...params).map(row => ({
+    ...row,
+    options: row.options ? JSON.parse(row.options) : null
+  }));
+}
+
+/**
+ * Update parsed question status (approve/reject)
+ * @param {string} questionId - Parsed question ID
+ * @param {string} status - New status (approved/rejected)
+ * @param {string} reviewerNotes - Notes from reviewer
+ */
+function updateParsedQuestionStatus(questionId, status, reviewerNotes = null) {
+  const stmt = db.prepare(`
+    UPDATE parsed_questions
+    SET status = ?, reviewer_notes = ?, reviewed_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `);
+  stmt.run(status, reviewerNotes, questionId);
+  return getParsedQuestion(questionId);
+}
+
+/**
+ * Update parsed question content
+ * @param {string} questionId - Parsed question ID
+ * @param {Object} data - Update data
+ */
+function updateParsedQuestion(questionId, data) {
+  const fields = [];
+  const values = [];
+
+  if (data.normalizedContent !== undefined) {
+    fields.push('normalized_content = ?');
+    values.push(data.normalizedContent);
+  }
+  if (data.options !== undefined) {
+    fields.push('options = ?');
+    values.push(JSON.stringify(data.options));
+  }
+  if (data.rawContent !== undefined) {
+    fields.push('raw_content = ?');
+    values.push(data.rawContent);
+  }
+
+  if (fields.length === 0) return getParsedQuestion(questionId);
+
+  values.push(questionId);
+  const stmt = db.prepare(`UPDATE parsed_questions SET ${fields.join(', ')} WHERE id = ?`);
+  stmt.run(...values);
+  return getParsedQuestion(questionId);
+}
+
+/**
+ * Delete exam PDF and all related data
+ * @param {string} examId - Exam PDF ID
+ */
+function deleteExamPdf(examId) {
+  const deletePages = db.prepare('DELETE FROM exam_pages WHERE exam_id = ?');
+  const deleteQuestions = db.prepare('DELETE FROM parsed_questions WHERE exam_id = ?');
+  const deleteExam = db.prepare('DELETE FROM exam_pdfs WHERE id = ?');
+
+  const deleteAll = db.transaction(() => {
+    deleteQuestions.run(examId);
+    deletePages.run(examId);
+    deleteExam.run(examId);
+  });
+
+  deleteAll();
+}
+
 // Export database instance and helper functions
 export {
   db,
@@ -574,5 +847,22 @@ export {
   createTopic,
   getTopic,
   // Seed
-  seedBDASubject
+  seedBDASubject,
+  // PDF Pipeline (Fase 2)
+  createExamPdf,
+  getExamPdf,
+  getExamPdfsBySubject,
+  updateExamPdfStatus,
+  updateExamPdfPageCount,
+  createExamPage,
+  getExamPage,
+  getExamPages,
+  updateExamPage,
+  createParsedQuestion,
+  getParsedQuestion,
+  getParsedQuestionsByExam,
+  getParsedQuestionsByStatus,
+  updateParsedQuestionStatus,
+  updateParsedQuestion,
+  deleteExamPdf
 };

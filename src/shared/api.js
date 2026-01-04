@@ -246,6 +246,103 @@ export const subjectsApi = {
   },
 };
 
+// ============================================
+// Pipeline API (Fase 2)
+// ============================================
+
+export const pipelineApi = {
+  // Upload a PDF exam
+  uploadPdf: async (file, subjectId) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('subjectId', subjectId);
+
+    const res = await api.post('/pipeline/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 300000, // 5 minutes for large files
+    });
+    return res;
+  },
+
+  // Get list of exams for a subject
+  getExams: async (subjectId) => {
+    const res = await api.get(`/pipeline/exams?subjectId=${subjectId}`);
+    return res;
+  },
+
+  // Get exam details
+  getExam: async (examId) => {
+    const res = await api.get(`/pipeline/exams/${examId}`);
+    return res;
+  },
+
+  // Delete an exam
+  deleteExam: async (examId) => {
+    const res = await api.delete(`/pipeline/exams/${examId}`);
+    return res;
+  },
+
+  // Extract pages from PDF
+  extractPages: async (examId) => {
+    const res = await api.post(`/pipeline/exams/${examId}/extract`);
+    return res;
+  },
+
+  // Process all pages with Claude Vision
+  processExam: async (examId) => {
+    const res = await api.post(`/pipeline/exams/${examId}/process`, {}, {
+      timeout: 600000, // 10 minutes for Vision processing
+    });
+    return res;
+  },
+
+  // Process a single page
+  processPage: async (examId, pageId) => {
+    const res = await api.post(`/pipeline/exams/${examId}/process-page/${pageId}`, {}, {
+      timeout: 120000, // 2 minutes per page
+    });
+    return res;
+  },
+
+  // Get questions for an exam
+  getExamQuestions: async (examId, status = null) => {
+    let url = `/pipeline/exams/${examId}/questions`;
+    if (status) url += `?status=${status}`;
+    const res = await api.get(url);
+    return res;
+  },
+
+  // Get a single question
+  getQuestion: async (questionId) => {
+    const res = await api.get(`/pipeline/questions/${questionId}`);
+    return res;
+  },
+
+  // Update a question
+  updateQuestion: async (questionId, data) => {
+    const res = await api.put(`/pipeline/questions/${questionId}`, data);
+    return res;
+  },
+
+  // Approve a question
+  approveQuestion: async (questionId, topic = null, notes = null) => {
+    const res = await api.post(`/pipeline/questions/${questionId}/approve`, { topic, notes });
+    return res;
+  },
+
+  // Reject a question
+  rejectQuestion: async (questionId, notes = null) => {
+    const res = await api.post(`/pipeline/questions/${questionId}/reject`, { notes });
+    return res;
+  },
+
+  // Approve all pending questions for an exam
+  approveAllQuestions: async (examId, topic = null) => {
+    const res = await api.post(`/pipeline/exams/${examId}/approve-all`, { topic });
+    return res;
+  },
+};
+
 export const progressApi = {
   // Record an attempt
   recordAttempt: async (data) => {

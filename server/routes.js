@@ -10,6 +10,7 @@ import questionsRouter from './routes/questions.js';
 import solvingRouter from './routes/solving.js';
 import statsRouter from './routes/stats.js';
 import subjectsRouter from './routes/subjects.js';
+import pipelineRouter from './routes/pipeline.js';
 
 const router = Router();
 
@@ -19,6 +20,9 @@ const router = Router();
 
 // Subjects routes (Fase 0): /api/subjects
 router.use('/subjects', subjectsRouter);
+
+// Pipeline routes (Fase 2): /api/pipeline
+router.use('/pipeline', pipelineRouter);
 
 // Questions routes: /api/topics, /api/questions/:topic, etc.
 router.use('/', questionsRouter);
@@ -54,7 +58,7 @@ router.get('/', (req, res) => {
   res.json({
     success: true,
     name: 'Exam App API',
-    version: '1.1.0',
+    version: '1.2.0',
     endpoints: {
       subjects: {
         list: 'GET /api/subjects',
@@ -87,6 +91,19 @@ router.get('/', (req, res) => {
       attempts: {
         record: 'POST /api/attempts',
         byQuestion: 'GET /api/attempts/:questionId'
+      },
+      pipeline: {
+        upload: 'POST /api/pipeline/upload',
+        listExams: 'GET /api/pipeline/exams?subjectId=',
+        examDetails: 'GET /api/pipeline/exams/:examId',
+        deleteExam: 'DELETE /api/pipeline/exams/:examId',
+        extractPages: 'POST /api/pipeline/exams/:examId/extract',
+        processExam: 'POST /api/pipeline/exams/:examId/process',
+        processPage: 'POST /api/pipeline/exams/:examId/process-page/:pageId',
+        questions: 'GET /api/pipeline/exams/:examId/questions',
+        approveQuestion: 'POST /api/pipeline/questions/:questionId/approve',
+        rejectQuestion: 'POST /api/pipeline/questions/:questionId/reject',
+        approveAll: 'POST /api/pipeline/exams/:examId/approve-all'
       },
       health: 'GET /api/health'
     }
