@@ -11,41 +11,33 @@ const TIMEOUT_MS = 60000;
  * Builds the prompt for Claude to solve a question
  */
 function buildPrompt(questionText) {
-  return `Eres un experto en bases de datos avanzadas (query processing, optimizacion, transacciones, concurrencia, recuperacion).
+  return `Eres un profesor de bases de datos avanzadas explicando a un estudiante.
 
-PREGUNTA DE EXAMEN:
-
+PREGUNTA:
 ${questionText}
 
+DEFINICIONES FORMALES (aplicar estrictamente):
+- RECUPERABLE: Si Ti lee un dato escrito por Tj, entonces Tj debe hacer commit ANTES que Ti
+- SIN CASCADA (cascadeless): Cada transaccion solo lee valores de transacciones YA comprometidas
+- ESTRICTA: Ninguna transaccion puede leer/escribir X hasta que quien escribio X haya terminado (commit/abort)
+
 INSTRUCCIONES:
-1. Analiza la pregunta aplicando las DEFINICIONES FORMALES de los conceptos
-2. Razona paso a paso antes de decidir la respuesta
-3. Tu respuesta DEBE ser consistente con tu razonamiento - NO cambies de opinion
-4. NO intentes adivinar cual es la "respuesta oficial" - razona desde los fundamentos
-5. Si tu analisis indica una respuesta, esa ES tu respuesta final
+1. Analiza paso a paso aplicando las definiciones formales
+2. Tu respuesta debe ser CONSISTENTE con tu analisis
+3. Explica de forma DIDACTICA y COMPLETA para que el estudiante aprenda
+4. NO intentes adivinar respuestas "oficiales" - razona desde los fundamentos
 
-DEFINICIONES CLAVE (usar cuando aplique):
-- Planificacion RECUPERABLE: Si Ti lee un dato escrito por Tj, entonces Tj debe hacer commit ANTES que Ti
-- Planificacion SIN CASCADA (cascadeless): Cada transaccion solo lee valores escritos por transacciones YA comprometidas
-- Planificacion ESTRICTA: Ninguna transaccion puede leer NI escribir un dato X hasta que la transaccion que escribio X haya terminado
-
-Responde UNICAMENTE con un objeto JSON valido:
+Responde en JSON (sin markdown, sin texto adicional).
+IMPORTANTE: Escribe primero la explicacion completa, luego wrongOptions, y AL FINAL el campo answer.
+Esto asegura que tu respuesta sea consistente con tu razonamiento.
 
 {
-  "answer": "x",
-  "explanation": "Razonamiento paso a paso que lleva a la respuesta...",
+  "explanation": "Explicacion DETALLADA y DIDACTICA de minimo 200 palabras. Termina con: Por lo tanto, la respuesta correcta es X.",
   "wrongOptions": {
-    "y": "Por que esta opcion es incorrecta...",
-    "z": "Por que esta opcion es incorrecta...",
-    "w": "Por que esta opcion es incorrecta..."
-  }
-}
-
-REQUISITOS:
-- "answer": letra minuscula (a, b, c, o d) que sea CONSISTENTE con tu explanation
-- "explanation": razonamiento completo y coherente
-- "wrongOptions": explicacion de cada opcion incorrecta (no incluir la correcta)
-- Sin texto adicional fuera del JSON`;
+    "letra": "Por que esta opcion es incorrecta..."
+  },
+  "answer": "letra que indicaste en la explicacion"
+}`;
 }
 
 /**
@@ -74,7 +66,6 @@ async function solveQuestion(questionText) {
       console.log('[ClaudeService] Message type:', message.type, message.subtype || '');
 
       if (message.type === 'assistant' && message.message?.content) {
-        // Extract text from content blocks
         for (const block of message.message.content) {
           if (block.type === 'text') {
             fullResponse += block.text;
@@ -82,7 +73,6 @@ async function solveQuestion(questionText) {
         }
       }
 
-      // Also check for result message
       if (message.type === 'result') {
         console.log('[ClaudeService] Result:', message.subtype, message.result?.substring(0, 200) || 'no result');
         if (message.result && !fullResponse) {

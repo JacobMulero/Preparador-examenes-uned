@@ -28,8 +28,9 @@ describe('claudeService', () => {
     it('should include all required JSON fields in instructions', () => {
       const prompt = buildPrompt('Test question');
 
-      expect(prompt).toContain('a, b, c, o d');
-      expect(prompt).toContain('letra minuscula');
+      expect(prompt).toContain('explanation');
+      expect(prompt).toContain('answer');
+      expect(prompt).toContain('wrongOptions');
     });
   });
 
