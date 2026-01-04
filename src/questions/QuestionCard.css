@@ -1,0 +1,161 @@
+.question-card {
+  margin-bottom: 1.5rem;
+}
+
+.question-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.question-number {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.question-page {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.question-statement {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-accent);
+}
+
+.statement-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-accent);
+  margin-bottom: 0.5rem;
+}
+
+.statement-content {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+.question-text {
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.question-options {
+  margin-top: 1rem;
+}
+
+.question-options .radio-option {
+  position: relative;
+}
+
+.question-options .radio-option-label {
+  flex: 1;
+}
+
+.question-options .radio-option-label p {
+  margin: 0;
+}
+
+.question-options .radio-option-label .markdown-content {
+  font-size: inherit;
+}
+
+/* Option indicators */
+.option-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.correct-indicator {
+  background-color: var(--color-success);
+  color: white;
+}
+
+.incorrect-indicator {
+  background-color: var(--color-error);
+  color: white;
+}
+
+/* Styling for formulas and special characters */
+.question-text .markdown-content,
+.statement-content .markdown-content,
+.radio-option-label .markdown-content {
+  /* Support for mathematical symbols */
+  font-feature-settings: 'liga' 0;
+}
+
+/* Custom styling for common formula patterns */
+.question-text code,
+.statement-content code,
+.radio-option-label code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  padding: 0.1em 0.3em;
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+/* Table styles for markdown tables */
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+
+.markdown-content th,
+.markdown-content td {
+  border: 1px solid var(--color-border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.markdown-content th {
+  background-color: var(--color-bg-tertiary);
+  font-weight: 600;
+}
+
+.markdown-content tr:nth-child(even) {
+  background-color: var(--color-bg-secondary);
+}
+
+.markdown-content tr:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+/* Skeleton loading for question */
+.question-card-skeleton {
+  padding: 1.5rem;
+}
+
+.question-card-skeleton .skeleton {
+  margin-bottom: 0.75rem;
+}
+
+.question-card-skeleton .skeleton-title {
+  height: 1.5rem;
+  width: 30%;
+  margin-bottom: 1.5rem;
+}
+
+.question-card-skeleton .skeleton-text {
+  height: 1rem;
+}
+
+.question-card-skeleton .skeleton-option {
+  height: 3.5rem;
+  margin-bottom: 0.75rem;
+  border-radius: var(--radius-md);
+}

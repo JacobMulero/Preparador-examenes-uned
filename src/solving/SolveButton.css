@@ -1,0 +1,22 @@
+.solve-button {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.solve-button:disabled {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.solve-button.loading {
+  background-color: var(--color-accent);
+  opacity: 0.9;
+}
+
+.solve-button .spinner {
+  border-color: rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+}
