@@ -13,28 +13,39 @@ const TIMEOUT_MS = 60000;
 function buildPrompt(questionText) {
   return `Eres un experto en bases de datos avanzadas (query processing, optimizacion, transacciones, concurrencia, recuperacion).
 
-Resuelve esta pregunta de examen de tipo test:
+PREGUNTA DE EXAMEN:
 
 ${questionText}
 
-IMPORTANTE: Responde UNICAMENTE con un objeto JSON valido, sin texto adicional ni bloques de codigo markdown.
+INSTRUCCIONES:
+1. Analiza la pregunta aplicando las DEFINICIONES FORMALES de los conceptos
+2. Razona paso a paso antes de decidir la respuesta
+3. Tu respuesta DEBE ser consistente con tu razonamiento - NO cambies de opinion
+4. NO intentes adivinar cual es la "respuesta oficial" - razona desde los fundamentos
+5. Si tu analisis indica una respuesta, esa ES tu respuesta final
 
-El JSON debe tener exactamente esta estructura:
+DEFINICIONES CLAVE (usar cuando aplique):
+- Planificacion RECUPERABLE: Si Ti lee un dato escrito por Tj, entonces Tj debe hacer commit ANTES que Ti
+- Planificacion SIN CASCADA (cascadeless): Cada transaccion solo lee valores escritos por transacciones YA comprometidas
+- Planificacion ESTRICTA: Ninguna transaccion puede leer NI escribir un dato X hasta que la transaccion que escribio X haya terminado
+
+Responde UNICAMENTE con un objeto JSON valido:
+
 {
-  "answer": "a",
-  "explanation": "Explicacion detallada de por que la respuesta es correcta...",
+  "answer": "x",
+  "explanation": "Razonamiento paso a paso que lleva a la respuesta...",
   "wrongOptions": {
-    "b": "Por que la opcion b es incorrecta...",
-    "c": "Por que la opcion c es incorrecta...",
-    "d": "Por que la opcion d es incorrecta..."
+    "y": "Por que esta opcion es incorrecta...",
+    "z": "Por que esta opcion es incorrecta...",
+    "w": "Por que esta opcion es incorrecta..."
   }
 }
 
-Notas:
-- "answer" debe ser una letra minuscula: a, b, c, o d
-- "explanation" debe explicar el razonamiento completo
-- "wrongOptions" debe explicar por que cada opcion incorrecta esta mal
-- No incluyas la opcion correcta en wrongOptions`;
+REQUISITOS:
+- "answer": letra minuscula (a, b, c, o d) que sea CONSISTENTE con tu explanation
+- "explanation": razonamiento completo y coherente
+- "wrongOptions": explicacion de cada opcion incorrecta (no incluir la correcta)
+- Sin texto adicional fuera del JSON`;
 }
 
 /**
