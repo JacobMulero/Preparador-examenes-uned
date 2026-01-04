@@ -9,12 +9,16 @@ import { Router } from 'express';
 import questionsRouter from './routes/questions.js';
 import solvingRouter from './routes/solving.js';
 import statsRouter from './routes/stats.js';
+import subjectsRouter from './routes/subjects.js';
 
 const router = Router();
 
 // ============================================
 // Mount Route Modules
 // ============================================
+
+// Subjects routes (Fase 0): /api/subjects
+router.use('/subjects', subjectsRouter);
 
 // Questions routes: /api/topics, /api/questions/:topic, etc.
 router.use('/', questionsRouter);
@@ -50,8 +54,15 @@ router.get('/', (req, res) => {
   res.json({
     success: true,
     name: 'Exam App API',
-    version: '1.0.0',
+    version: '1.1.0',
     endpoints: {
+      subjects: {
+        list: 'GET /api/subjects',
+        detail: 'GET /api/subjects/:id',
+        create: 'POST /api/subjects',
+        update: 'PUT /api/subjects/:id',
+        topics: 'GET /api/subjects/:id/topics'
+      },
       topics: 'GET /api/topics',
       questions: {
         list: 'GET /api/questions/:topic',

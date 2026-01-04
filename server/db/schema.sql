@@ -1,6 +1,41 @@
 -- Database schema for exam-app
 -- SQLite database for tracking questions, attempts, and cached solutions
 
+-- ============================================
+-- FASE 0: Multi-Subject Foundation
+-- ============================================
+
+-- Subjects: asignaturas disponibles
+CREATE TABLE IF NOT EXISTS subjects (
+  id TEXT PRIMARY KEY,                    -- "bda", "ffi", "ds"
+  name TEXT NOT NULL,
+  short_name TEXT,
+  description TEXT,
+  language TEXT DEFAULT 'es',
+  methodology TEXT NOT NULL,              -- JSON: ["test"] o ["practice"]
+  exam_type TEXT DEFAULT 'test',          -- "test" | "verification"
+  modes TEXT NOT NULL,                    -- JSON: ["test"] o ["verification"] o ambos
+  claude_context TEXT,                    -- JSON: expertise, terminology
+  config TEXT,                            -- config.json completo
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Topics: temas/capitulos por asignatura
+CREATE TABLE IF NOT EXISTS topics (
+  id TEXT PRIMARY KEY,                    -- "bda_tema1"
+  subject_id TEXT NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT,
+  order_num INTEGER DEFAULT 0,
+  FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_topics_subject ON topics(subject_id);
+
+-- ============================================
+-- Core Tables
+-- ============================================
+
 -- Questions table: stores parsed questions from markdown files
 CREATE TABLE IF NOT EXISTS questions (
   id TEXT PRIMARY KEY,                    -- Format: "tema1_pregunta5"

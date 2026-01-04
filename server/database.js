@@ -294,6 +294,216 @@ function cacheSolution(solution) {
   });
 }
 
+// ============================================
+// Subject Helper Functions (Fase 0)
+// ============================================
+
+/**
+ * Get all subjects
+ */
+function getAllSubjects() {
+  const stmt = db.prepare(`
+    SELECT id, name, short_name, description, methodology, exam_type, modes
+    FROM subjects
+    ORDER BY name
+  `);
+  return stmt.all().map(row => ({
+    ...row,
+    methodology: JSON.parse(row.methodology),
+    modes: JSON.parse(row.modes)
+  }));
+}
+
+/**
+ * Get a subject by ID
+ * @param {string} subjectId - Subject ID
+ */
+function getSubjectById(subjectId) {
+  const stmt = db.prepare(`
+    SELECT *
+    FROM subjects
+    WHERE id = ?
+  `);
+  const row = stmt.get(subjectId);
+  if (!row) return null;
+
+  return {
+    ...row,
+    methodology: JSON.parse(row.methodology),
+    modes: JSON.parse(row.modes),
+    claudeContext: row.claude_context ? JSON.parse(row.claude_context) : null,
+    config: row.config ? JSON.parse(row.config) : null
+  };
+}
+
+/**
+ * Create a new subject
+ * @param {Object} subject - Subject data
+ */
+function createSubject(subject) {
+  const stmt = db.prepare(`
+    INSERT INTO subjects (id, name, short_name, description, language, methodology, exam_type, modes, claude_context, config)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  stmt.run(
+    subject.id,
+    subject.name,
+    subject.shortName || null,
+    subject.description || null,
+    subject.language || 'es',
+    JSON.stringify(subject.methodology),
+    subject.examType || 'test',
+    JSON.stringify(subject.modes),
+    subject.claudeContext ? JSON.stringify(subject.claudeContext) : null,
+    subject.config ? JSON.stringify(subject.config) : null
+  );
+  return getSubjectById(subject.id);
+}
+
+/**
+ * Update a subject
+ * @param {string} subjectId - Subject ID
+ * @param {Object} updates - Fields to update
+ */
+function updateSubject(subjectId, updates) {
+  const fields = [];
+  const values = [];
+
+  if (updates.name !== undefined) {
+    fields.push('name = ?');
+    values.push(updates.name);
+  }
+  if (updates.shortName !== undefined) {
+    fields.push('short_name = ?');
+    values.push(updates.shortName);
+  }
+  if (updates.description !== undefined) {
+    fields.push('description = ?');
+    values.push(updates.description);
+  }
+  if (updates.methodology !== undefined) {
+    fields.push('methodology = ?');
+    values.push(JSON.stringify(updates.methodology));
+  }
+  if (updates.modes !== undefined) {
+    fields.push('modes = ?');
+    values.push(JSON.stringify(updates.modes));
+  }
+  if (updates.claudeContext !== undefined) {
+    fields.push('claude_context = ?');
+    values.push(JSON.stringify(updates.claudeContext));
+  }
+
+  if (fields.length === 0) return getSubjectById(subjectId);
+
+  values.push(subjectId);
+  const stmt = db.prepare(`UPDATE subjects SET ${fields.join(', ')} WHERE id = ?`);
+  stmt.run(...values);
+
+  return getSubjectById(subjectId);
+}
+
+// ============================================
+// Topics by Subject Helper Functions (Fase 0)
+// ============================================
+
+/**
+ * Get topics for a subject
+ * @param {string} subjectId - Subject ID
+ */
+function getTopicsBySubject(subjectId) {
+  const stmt = db.prepare(`
+    SELECT id, name, description, order_num
+    FROM topics
+    WHERE subject_id = ?
+    ORDER BY order_num
+  `);
+  return stmt.all(subjectId);
+}
+
+/**
+ * Create a topic
+ * @param {Object} topic - Topic data
+ */
+function createTopic(topic) {
+  const stmt = db.prepare(`
+    INSERT INTO topics (id, subject_id, name, description, order_num)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+  stmt.run(
+    topic.id,
+    topic.subjectId,
+    topic.name,
+    topic.description || null,
+    topic.orderNum || 0
+  );
+  return getTopic(topic.id);
+}
+
+/**
+ * Get a topic by ID
+ * @param {string} topicId - Topic ID
+ */
+function getTopic(topicId) {
+  const stmt = db.prepare('SELECT * FROM topics WHERE id = ?');
+  return stmt.get(topicId);
+}
+
+/**
+ * Seed BDA as default subject with its topics
+ */
+function seedBDASubject() {
+  // Check if BDA already exists
+  const existing = getSubjectById('bda');
+  if (existing) {
+    console.log('[Database] BDA subject already exists, skipping seed');
+    return existing;
+  }
+
+  console.log('[Database] Seeding BDA subject and topics...');
+
+  // Create BDA subject
+  createSubject({
+    id: 'bda',
+    name: 'Bases de Datos Avanzadas',
+    shortName: 'BDA',
+    description: 'Query processing, optimization, transactions, concurrency, recovery',
+    language: 'es',
+    methodology: ['test'],
+    examType: 'test',
+    modes: ['test'],
+    claudeContext: {
+      expertise: 'database internals, query processing, query optimization, transactions, concurrency control, recovery systems',
+      terminology: ['tupla', 'bloque', 'reunion', 'accesos a disco']
+    }
+  });
+
+  // Create BDA topics (matching existing Tema1-7 + SinTema)
+  const bdaTopics = [
+    { id: 'bda_tema1', name: 'Query Processing', description: 'Cost estimation, sorting, join algorithms', orderNum: 1 },
+    { id: 'bda_tema2', name: 'Query Optimization', description: 'Catalog statistics, equivalence rules', orderNum: 2 },
+    { id: 'bda_tema3', name: 'Transactions', description: 'ACID, serializability, schedules', orderNum: 3 },
+    { id: 'bda_tema4', name: 'Concurrency Control', description: 'Locking, 2PL, deadlocks', orderNum: 4 },
+    { id: 'bda_tema5', name: 'Recovery System', description: 'Logging, ARIES, checkpoints', orderNum: 5 },
+    { id: 'bda_tema6', name: 'Tema 6', description: 'Contenido adicional', orderNum: 6 },
+    { id: 'bda_tema7', name: 'Tema 7', description: 'Contenido adicional', orderNum: 7 },
+    { id: 'bda_sintema', name: 'Sin Tema', description: 'Preguntas generales', orderNum: 99 }
+  ];
+
+  for (const topic of bdaTopics) {
+    createTopic({
+      id: topic.id,
+      subjectId: 'bda',
+      name: topic.name,
+      description: topic.description,
+      orderNum: topic.orderNum
+    });
+  }
+
+  console.log('[Database] BDA subject and topics seeded successfully');
+  return getSubjectById('bda');
+}
+
 // Export database instance and helper functions
 export {
   db,
@@ -314,5 +524,16 @@ export {
   getTopicStats,
   // Solutions Cache
   getCachedSolution,
-  cacheSolution
+  cacheSolution,
+  // Subjects (Fase 0)
+  getAllSubjects,
+  getSubjectById,
+  createSubject,
+  updateSubject,
+  // Topics by Subject (Fase 0)
+  getTopicsBySubject,
+  createTopic,
+  getTopic,
+  // Seed
+  seedBDASubject
 };

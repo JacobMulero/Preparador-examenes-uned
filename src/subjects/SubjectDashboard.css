@@ -1,0 +1,63 @@
+.subject-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+}
+
+.subject-dashboard.loading,
+.subject-dashboard.error {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+}
+
+.subject-dashboard-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.back-link {
+  display: inline-block;
+  color: #4a90d9;
+  text-decoration: none;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.back-link::before {
+  content: '\2190 ';
+}
+
+.subject-dashboard-header h1 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.subject-dashboard-header .subject-description {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.coming-soon {
+  text-align: center;
+  padding: 3rem;
+  background: #f9f9f9;
+  border-radius: 12px;
+  margin-top: 2rem;
+}
+
+.coming-soon h2 {
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.coming-soon p {
+  color: #888;
+  margin: 0.5rem 0;
+}

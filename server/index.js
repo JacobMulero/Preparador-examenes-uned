@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { initializeDatabase } from './database.js';
+import { initializeDatabase, seedBDASubject } from './database.js';
 import routes from './routes.js';
 
 const app = express();
@@ -81,6 +81,9 @@ async function startServer() {
     // Initialize database
     console.log('[Server] Initializing database...');
     initializeDatabase();
+
+    // Seed BDA subject (Fase 0)
+    seedBDASubject();
 
     // Start listening
     app.listen(PORT, () => {

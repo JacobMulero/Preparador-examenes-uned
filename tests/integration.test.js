@@ -113,6 +113,53 @@ async function runTests() {
     assert(typeof data.data.total_questions === 'number', 'should have total_questions');
   })) passed++; else failed++;
 
+  // ============================================
+  // Fase 0: Subjects Tests
+  // ============================================
+
+  // List subjects
+  if (await test('Subjects endpoint returns list of subjects', async () => {
+    const data = await fetchJSON('/api/subjects');
+    assert(data.success === true, 'success should be true');
+    assert(Array.isArray(data.subjects), 'subjects should be an array');
+    assert(data.subjects.length >= 1, 'should have at least 1 subject');
+    const bda = data.subjects.find(s => s.id === 'bda');
+    assert(bda, 'should have BDA subject');
+    assert(bda.name === 'Bases de Datos Avanzadas', 'BDA should have correct name');
+  })) passed++; else failed++;
+
+  // Get single subject
+  if (await test('Subject detail endpoint returns BDA details', async () => {
+    const data = await fetchJSON('/api/subjects/bda');
+    assert(data.success === true, 'success should be true');
+    assert(data.subject.id === 'bda', 'should return bda subject');
+    assert(Array.isArray(data.subject.methodology), 'methodology should be parsed');
+    assert(Array.isArray(data.subject.modes), 'modes should be parsed');
+    assert(data.subject.claudeContext, 'should have claudeContext');
+  })) passed++; else failed++;
+
+  // Get subject topics
+  if (await test('Subject topics endpoint returns BDA topics', async () => {
+    const data = await fetchJSON('/api/subjects/bda/topics');
+    assert(data.success === true, 'success should be true');
+    assert(data.subject.id === 'bda', 'should return bda subject info');
+    assert(Array.isArray(data.topics), 'topics should be an array');
+    assert(data.topics.length >= 7, 'should have at least 7 topics');
+    const tema1 = data.topics.find(t => t.id === 'bda_tema1');
+    assert(tema1, 'should have bda_tema1');
+    assert(tema1.name === 'Query Processing', 'tema1 should have correct name');
+  })) passed++; else failed++;
+
+  // Non-existent subject
+  if (await test('Subject detail returns 404 for non-existent subject', async () => {
+    const response = await fetch(`${BASE_URL}/api/subjects/nonexistent`, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    assert(response.status === 404, 'should return 404');
+    const data = await response.json();
+    assert(data.success === false, 'success should be false');
+  })) passed++; else failed++;
+
   console.log(`\n📊 Results: ${passed} passed, ${failed} failed\n`);
 
   return failed === 0;

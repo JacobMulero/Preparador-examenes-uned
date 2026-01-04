@@ -171,6 +171,42 @@ export const solvingApi = {
   },
 };
 
+// ============================================
+// Subjects API (Fase 0)
+// ============================================
+
+export const subjectsApi = {
+  // Get list of subjects
+  getSubjects: async () => {
+    const res = await api.get('/subjects');
+    return res;
+  },
+
+  // Get subject details
+  getSubject: async (subjectId) => {
+    const res = await api.get(`/subjects/${subjectId}`);
+    return res;
+  },
+
+  // Get topics for a subject
+  getSubjectTopics: async (subjectId) => {
+    const res = await api.get(`/subjects/${subjectId}/topics`);
+    return res;
+  },
+
+  // Create a subject
+  createSubject: async (subject) => {
+    const res = await api.post('/subjects', subject);
+    return res;
+  },
+
+  // Update a subject
+  updateSubject: async (subjectId, updates) => {
+    const res = await api.put(`/subjects/${subjectId}`, updates);
+    return res;
+  },
+};
+
 export const progressApi = {
   // Record an attempt
   recordAttempt: async (data) => {

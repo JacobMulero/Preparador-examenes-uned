@@ -1,0 +1,30 @@
+.subject-selector {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.subject-selector h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.subjects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.subject-selector.loading,
+.subject-selector.error {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+}
+
+.no-subjects {
+  text-align: center;
+  color: #666;
+  grid-column: 1 / -1;
+}
