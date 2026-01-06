@@ -815,6 +815,226 @@ function deleteExamPdf(examId) {
   deleteAll();
 }
 
+// ============================================
+// Generation Sessions Helper Functions (Fase 3)
+// ============================================
+
+/**
+ * Generate a UUID v4
+ */
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+/**
+ * Create a new generation session
+ * @param {Object} session - Session data
+ */
+function createGenerationSession(session) {
+  const id = session.id || generateUUID();
+  const stmt = db.prepare(`
+    INSERT INTO generation_sessions
+    (id, subject_id, student_id, deliverable_id, session_mode, topic_focus, difficulty, question_count, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+  `);
+  stmt.run(
+    id,
+    session.subjectId,
+    session.studentId || null,
+    session.deliverableId || null,
+    session.sessionMode || 'test',
+    session.topicFocus ? JSON.stringify(session.topicFocus) : null,
+    session.difficulty || 'mixed',
+    session.questionCount || 10
+  );
+  return getGenerationSessionById(id);
+}
+
+/**
+ * Get generation session by ID
+ * @param {string} id - Session ID
+ */
+function getGenerationSessionById(id) {
+  const stmt = db.prepare('SELECT * FROM generation_sessions WHERE id = ?');
+  const row = stmt.get(id);
+  if (!row) return null;
+  return {
+    ...row,
+    topicFocus: row.topic_focus ? JSON.parse(row.topic_focus) : null
+  };
+}
+
+/**
+ * Get generation sessions by subject
+ * @param {string} subjectId - Subject ID
+ */
+function getGenerationSessionsBySubject(subjectId) {
+  const stmt = db.prepare(`
+    SELECT * FROM generation_sessions
+    WHERE subject_id = ?
+    ORDER BY created_at DESC
+  `);
+  return stmt.all(subjectId).map(row => ({
+    ...row,
+    topicFocus: row.topic_focus ? JSON.parse(row.topic_focus) : null
+  }));
+}
+
+/**
+ * Get generation sessions by deliverable
+ * @param {string} deliverableId - Deliverable ID
+ */
+function getGenerationSessionsByDeliverable(deliverableId) {
+  const stmt = db.prepare(`
+    SELECT * FROM generation_sessions
+    WHERE deliverable_id = ?
+    ORDER BY created_at DESC
+  `);
+  return stmt.all(deliverableId).map(row => ({
+    ...row,
+    topicFocus: row.topic_focus ? JSON.parse(row.topic_focus) : null
+  }));
+}
+
+/**
+ * Update generation session status
+ * @param {string} id - Session ID
+ * @param {string} status - New status
+ * @param {string} errorMessage - Error message (optional)
+ */
+function updateGenerationSessionStatus(id, status, errorMessage = null) {
+  const stmt = db.prepare(`
+    UPDATE generation_sessions
+    SET status = ?,
+        error_message = ?,
+        completed_at = CASE WHEN ? IN ('completed', 'error') THEN datetime('now') ELSE completed_at END
+    WHERE id = ?
+  `);
+  stmt.run(status, errorMessage, status, id);
+  return getGenerationSessionById(id);
+}
+
+// ============================================
+// Generated Test Questions Helper Functions (Fase 3)
+// ============================================
+
+/**
+ * Add a generated question
+ * @param {Object} question - Question data
+ */
+function addGeneratedQuestion(question) {
+  const id = question.id || generateUUID();
+  const stmt = db.prepare(`
+    INSERT INTO generated_test_questions
+    (id, session_id, question_number, content, options, correct_answer, explanation, wrong_explanations, rationale, targeted_weakness, based_on_section, difficulty)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  stmt.run(
+    id,
+    question.sessionId,
+    question.questionNumber,
+    question.content,
+    JSON.stringify(question.options),
+    question.correctAnswer,
+    question.explanation,
+    question.wrongExplanations ? JSON.stringify(question.wrongExplanations) : null,
+    question.rationale || null,
+    question.targetedWeakness || null,
+    question.basedOnSection || null,
+    question.difficulty || 'medium'
+  );
+  return id;
+}
+
+/**
+ * Get generated questions by session
+ * @param {string} sessionId - Session ID
+ */
+function getGeneratedQuestionsBySession(sessionId) {
+  const stmt = db.prepare(`
+    SELECT * FROM generated_test_questions
+    WHERE session_id = ?
+    ORDER BY question_number
+  `);
+  return stmt.all(sessionId).map(row => ({
+    ...row,
+    options: JSON.parse(row.options),
+    wrongExplanations: row.wrong_explanations ? JSON.parse(row.wrong_explanations) : null
+  }));
+}
+
+/**
+ * Get generated question by ID
+ * @param {string} id - Question ID
+ */
+function getGeneratedQuestionById(id) {
+  const stmt = db.prepare('SELECT * FROM generated_test_questions WHERE id = ?');
+  const row = stmt.get(id);
+  if (!row) return null;
+  return {
+    ...row,
+    options: JSON.parse(row.options),
+    wrongExplanations: row.wrong_explanations ? JSON.parse(row.wrong_explanations) : null
+  };
+}
+
+// ============================================
+// Generated Question Attempts Helper Functions (Fase 3)
+// ============================================
+
+/**
+ * Record an attempt on a generated question
+ * @param {Object} attempt - Attempt data
+ */
+function recordGeneratedAttempt(attempt) {
+  const stmt = db.prepare(`
+    INSERT INTO generated_question_attempts
+    (question_id, session_id, user_answer, is_correct, time_spent_seconds)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+  stmt.run(
+    attempt.questionId,
+    attempt.sessionId,
+    attempt.userAnswer,
+    attempt.isCorrect ? 1 : 0,
+    attempt.timeSpentSeconds || null
+  );
+}
+
+/**
+ * Get attempts by session
+ * @param {string} sessionId - Session ID
+ */
+function getGeneratedAttemptsBySession(sessionId) {
+  const stmt = db.prepare(`
+    SELECT * FROM generated_question_attempts
+    WHERE session_id = ?
+    ORDER BY attempted_at
+  `);
+  return stmt.all(sessionId);
+}
+
+/**
+ * Get session statistics
+ * @param {string} sessionId - Session ID
+ * @returns {Object} Statistics with total_attempts, correct, avg_time
+ */
+function getSessionStats(sessionId) {
+  const stmt = db.prepare(`
+    SELECT
+      COUNT(*) as total_attempts,
+      SUM(CASE WHEN is_correct THEN 1 ELSE 0 END) as correct,
+      AVG(time_spent_seconds) as avg_time
+    FROM generated_question_attempts
+    WHERE session_id = ?
+  `);
+  return stmt.get(sessionId);
+}
+
 // Export database instance and helper functions
 export {
   db,
@@ -864,5 +1084,17 @@ export {
   getParsedQuestionsByStatus,
   updateParsedQuestionStatus,
   updateParsedQuestion,
-  deleteExamPdf
+  deleteExamPdf,
+  // Question Generation (Fase 3)
+  createGenerationSession,
+  getGenerationSessionById,
+  getGenerationSessionsBySubject,
+  getGenerationSessionsByDeliverable,
+  updateGenerationSessionStatus,
+  addGeneratedQuestion,
+  getGeneratedQuestionsBySession,
+  getGeneratedQuestionById,
+  recordGeneratedAttempt,
+  getGeneratedAttemptsBySession,
+  getSessionStats
 };

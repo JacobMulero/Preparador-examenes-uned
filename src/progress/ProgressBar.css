@@ -1,25 +1,30 @@
+/* ===========================================
+   Progress Bar - Notion/Linear Style
+   =========================================== */
+
 .progress-bar-container {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
   width: 100%;
 }
 
+/* Size variants */
 .progress-bar-container.sm .progress-bar {
-  height: 0.375rem;
+  height: 3px;
 }
 
 .progress-bar-container.md .progress-bar {
-  height: 0.5rem;
+  height: 4px;
 }
 
 .progress-bar-container.lg .progress-bar {
-  height: 0.75rem;
+  height: 6px;
 }
 
 .progress-bar {
   flex: 1;
-  background-color: var(--color-bg-tertiary);
+  background-color: var(--bg-tertiary);
   border-radius: var(--radius-full);
   overflow: hidden;
 }
@@ -27,29 +32,29 @@
 .progress-bar-fill {
   height: 100%;
   border-radius: var(--radius-full);
-  transition: width 0.3s ease;
+  transition: width 0.3s ease-out;
 }
 
 .progress-bar-fill.default {
-  background-color: var(--color-accent);
+  background-color: var(--accent-blue);
 }
 
 .progress-bar-fill.success {
-  background-color: var(--color-success);
+  background-color: var(--accent-green);
 }
 
 .progress-bar-fill.error {
-  background-color: var(--color-error);
+  background-color: var(--accent-red);
 }
 
 .progress-bar-fill.warning {
-  background-color: var(--color-warning);
+  background-color: var(--accent-orange);
 }
 
 .progress-bar-label {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 500;
-  color: var(--color-text-muted);
-  min-width: 2.5rem;
+  color: var(--text-muted);
+  min-width: 32px;
   text-align: right;
 }

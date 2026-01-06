@@ -1,0 +1,232 @@
+/* ===========================================
+   Practice Setup - Notion Style
+   =========================================== */
+
+.practice-setup {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Header */
+.practice-setup-header {
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.practice-setup-header h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.practice-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Back Link */
+.practice-setup .back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  margin-bottom: var(--space-4);
+  transition: color var(--transition-fast);
+}
+
+.practice-setup .back-link:hover {
+  color: var(--text-primary);
+}
+
+.practice-setup .back-link::before {
+  content: '\2190';
+}
+
+/* Setup Form */
+.setup-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+/* Sections */
+.setup-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.section-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Topic Chips */
+.topic-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--text-secondary);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.chip:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.chip.selected {
+  background-color: var(--accent-blue-light);
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+/* Difficulty Options */
+.difficulty-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.difficulty-option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.difficulty-option:hover {
+  background-color: var(--bg-hover);
+}
+
+.difficulty-option.selected {
+  border-color: var(--accent-blue);
+  background-color: var(--accent-blue-light);
+}
+
+.difficulty-option input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  accent-color: var(--accent-blue);
+  flex-shrink: 0;
+}
+
+.difficulty-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.difficulty-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.difficulty-description {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Count Options */
+.count-options {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.count-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--text-secondary);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.count-option:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.count-option.selected {
+  background-color: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #ffffff;
+}
+
+/* Setup Actions */
+.setup-actions {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-light);
+}
+
+.start-button {
+  width: 100%;
+}
+
+.start-button .spinner {
+  width: 14px;
+  height: 14px;
+  margin-right: var(--space-2);
+  border-width: 2px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .practice-setup {
+    padding: 0;
+  }
+
+  .count-options {
+    flex-wrap: wrap;
+  }
+
+  .count-option {
+    flex: 1;
+    min-width: 60px;
+  }
+}

@@ -343,6 +343,54 @@ export const pipelineApi = {
   },
 };
 
+// ============================================
+// Generation API (Fase 3)
+// ============================================
+
+export const generationApi = {
+  // Create a test session
+  createTestSession: async (config) => {
+    const res = await api.post('/generate/test-session', config);
+    return res;
+  },
+
+  // Start question generation
+  startGeneration: async (sessionId) => {
+    const res = await api.post(`/generate/sessions/${sessionId}/start`);
+    return res;
+  },
+
+  // Get session details
+  getSession: async (sessionId) => {
+    const res = await api.get(`/generate/sessions/${sessionId}`);
+    return res;
+  },
+
+  // Get questions for a session
+  getSessionQuestions: async (sessionId) => {
+    const res = await api.get(`/generate/sessions/${sessionId}/questions`);
+    return res;
+  },
+
+  // Submit an answer for a generated question
+  submitGeneratedAnswer: async (sessionId, attempt) => {
+    const res = await api.post(`/generate/sessions/${sessionId}/attempt`, attempt);
+    return res;
+  },
+
+  // Get session statistics
+  getSessionStats: async (sessionId) => {
+    const res = await api.get(`/generate/sessions/${sessionId}/stats`);
+    return res;
+  },
+
+  // Get sessions for a deliverable
+  getDeliverableSessions: async (deliverableId) => {
+    const res = await api.get(`/generate/deliverable/${deliverableId}/sessions`);
+    return res;
+  },
+};
+
 export const progressApi = {
   // Record an attempt
   recordAttempt: async (data) => {

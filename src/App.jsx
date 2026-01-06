@@ -7,6 +7,8 @@ import QuestionList from './questions/QuestionList';
 import ReviewMode from './progress/ReviewMode';
 import PipelineDashboard from './pipeline/PipelineDashboard';
 import QuestionReview from './pipeline/QuestionReview';
+import PracticeSetup from './practice/PracticeSetup';
+import GeneratedTestQuestions from './practice/GeneratedTestQuestions';
 
 function App() {
   return (
@@ -22,6 +24,10 @@ function App() {
         {/* Fase 2: Pipeline de PDFs */}
         <Route path="/pipeline/:subjectId" element={<PipelineDashboard />} />
         <Route path="/pipeline/:subjectId/exam/:examId/review" element={<QuestionReview />} />
+
+        {/* Fase 3: Practica con preguntas generadas */}
+        <Route path="/practice/:subjectId" element={<PracticeSetup />} />
+        <Route path="/practice/:subjectId/session/:sessionId" element={<GeneratedTestQuestions />} />
 
         {/* Compatibilidad hacia atras: redirigir rutas antiguas a BDA */}
         <Route path="/topics" element={<Navigate to="/subjects/bda" replace />} />

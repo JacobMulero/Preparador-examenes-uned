@@ -1,183 +1,96 @@
+/* ===========================================
+   Stats Panel - Linear Style (Inline)
+   =========================================== */
+
 .stats-panel {
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-6);
 }
 
 .stats-panel.compact {
-  padding: 1rem;
+  margin-bottom: var(--space-4);
 }
 
-/* Compact variant */
-.stats-compact-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.stat-compact {
-  text-align: center;
-}
-
-.stat-compact-value {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  line-height: 1.2;
-}
-
-.stat-compact-label {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-}
-
-.stats-compact-progress {
-  padding-top: 1rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.stats-compact-progress .progress-label {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-  margin-bottom: 0.5rem;
-}
-
-.stats-compact-progress .progress-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.stats-compact-progress .progress-value {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  min-width: 2.5rem;
-  text-align: right;
-}
-
-/* Full variant */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.stat-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  background-color: var(--color-bg-secondary);
-  border-radius: var(--radius-md);
-  text-align: center;
-}
-
-.stat-icon {
+/* Inline stats row */
+.stats-inline {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  border-radius: 50%;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
 }
 
-.stat-icon.total {
-  background-color: var(--color-accent-light);
-  color: var(--color-accent);
-}
-
-.stat-icon.answered {
-  background-color: var(--color-warning-bg);
-  color: var(--color-warning);
-}
-
-.stat-icon.correct {
-  background-color: var(--color-success-bg);
-  color: var(--color-success);
-}
-
-.stat-icon.failed {
-  background-color: var(--color-error-bg);
-  color: var(--color-error);
-}
-
-.stat-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
+.stat-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
 }
 
 .stat-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  line-height: 1.2;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stat-value.stat-success {
+  color: var(--accent-green);
+}
+
+.stat-value.stat-error {
+  color: var(--accent-red);
 }
 
 .stat-label {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
+  font-size: 14px;
+  color: var(--text-muted);
 }
 
-/* Progress section */
-.stats-progress-section {
+/* Separator dot */
+.stat-separator {
+  color: var(--text-muted);
+  margin: 0 var(--space-2);
+  font-size: 14px;
+}
+
+.stat-separator::before {
+  content: '\00B7';
+}
+
+/* Progress bar container */
+.stats-progress {
+  margin-bottom: var(--space-3);
+}
+
+/* Accuracy row */
+.stats-accuracy {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.progress-item {
-  width: 100%;
-}
-
-.progress-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: 13px;
 }
 
-.progress-title {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-text-secondary);
+.accuracy-label {
+  color: var(--text-muted);
 }
 
-.progress-item .progress-value {
-  font-size: 0.875rem;
+.accuracy-value {
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--text-primary);
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .stats-compact-row {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-  }
-}
-
 @media (max-width: 480px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
+  .stats-inline {
+    gap: var(--space-2);
   }
 
-  .stat-card {
-    flex-direction: row;
-    text-align: left;
-    justify-content: flex-start;
+  .stat-separator {
+    margin: 0 var(--space-1);
   }
 
-  .stat-icon {
-    width: 2.5rem;
-    height: 2.5rem;
+  .stat-value,
+  .stat-label {
+    font-size: 13px;
   }
 }

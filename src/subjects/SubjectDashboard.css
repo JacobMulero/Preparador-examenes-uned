@@ -1,71 +1,84 @@
+/* ===========================================
+   Subject Dashboard - Notion Style
+   =========================================== */
+
 .subject-dashboard {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem 2rem;
+  width: 100%;
 }
 
 .subject-dashboard.loading,
 .subject-dashboard.error {
   text-align: center;
-  padding: 3rem;
-  color: #666;
+  padding: var(--space-12);
+  color: var(--text-muted);
 }
 
+/* Header */
 .subject-dashboard-header {
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #eee;
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--border-light);
 }
 
+/* Back Link - Notion style */
 .back-link {
-  display: inline-block;
-  color: #4a90d9;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
   text-decoration: none;
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
+  font-size: 13px;
+  margin-bottom: var(--space-4);
+  transition: color var(--transition-fast);
 }
 
 .back-link:hover {
-  text-decoration: underline;
+  color: var(--text-primary);
 }
 
 .back-link::before {
-  content: '\2190 ';
+  content: '\2190';
 }
 
 .subject-dashboard-header h1 {
-  margin: 0 0 0.5rem 0;
-  color: #333;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2) 0;
 }
 
 .subject-dashboard-header .subject-description {
+  font-size: 14px;
+  color: var(--text-secondary);
   margin: 0;
-  color: #666;
-  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
+/* Actions */
 .subject-actions {
-  margin-top: 1rem;
+  margin-top: var(--space-4);
+  display: flex;
+  gap: var(--space-3);
 }
 
-.subject-actions .btn {
-  margin-right: 0.5rem;
-}
-
+/* Coming Soon state */
 .coming-soon {
   text-align: center;
-  padding: 3rem;
-  background: #f9f9f9;
-  border-radius: 12px;
-  margin-top: 2rem;
+  padding: var(--space-12);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-6);
 }
 
 .coming-soon h2 {
-  color: #666;
-  margin-bottom: 1rem;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
 }
 
 .coming-soon p {
-  color: #888;
-  margin: 0.5rem 0;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: var(--space-2) 0;
 }

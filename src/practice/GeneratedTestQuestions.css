@@ -1,0 +1,187 @@
+/* ===========================================
+   Generated Test Questions
+   Uses shared styles from QuestionCard.css, QuestionList.css, AnswerPanel.css
+   Only includes specific overrides
+   =========================================== */
+
+.generated-questions {
+  width: 100%;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-10);
+  text-align: center;
+}
+
+.loading-state h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: var(--space-5);
+  margin-bottom: var(--space-2);
+}
+
+.loading-state p {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Error State */
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-10);
+  text-align: center;
+}
+
+.error-state h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.error-state p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-5);
+}
+
+/* Question topic badge */
+.question-topic {
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-blue);
+  background-color: var(--accent-blue-light);
+  border-radius: var(--radius-full);
+  text-transform: capitalize;
+}
+
+/* Results View */
+.results-view {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: var(--space-10) 0;
+  text-align: center;
+}
+
+.results-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-6);
+}
+
+.results-card {
+  margin-bottom: var(--space-6);
+}
+
+.results-card .card-body {
+  padding: var(--space-8);
+}
+
+.results-score {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.score-value {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--accent-green);
+}
+
+.score-divider {
+  font-size: 32px;
+  color: var(--text-muted);
+}
+
+.score-total {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.results-label {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-5);
+}
+
+.results-accuracy {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.results-accuracy .progress-bar-bg {
+  flex: 1;
+}
+
+.accuracy-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 50px;
+}
+
+.results-time {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: var(--space-4);
+}
+
+.results-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
+/* Progress bar colors for results */
+.progress-bar-fill.good {
+  background-color: var(--accent-green);
+}
+
+.progress-bar-fill.medium {
+  background-color: var(--accent-orange);
+}
+
+.progress-bar-fill.low {
+  background-color: var(--accent-red);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .results-actions {
+    flex-direction: column;
+  }
+
+  .results-actions .btn {
+    width: 100%;
+  }
+
+  .results-score {
+    gap: var(--space-1);
+  }
+
+  .score-value {
+    font-size: 36px;
+  }
+
+  .score-total {
+    font-size: 24px;
+  }
+}

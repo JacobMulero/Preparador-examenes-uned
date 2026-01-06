@@ -131,3 +131,64 @@ CREATE INDEX IF NOT EXISTS idx_exam_pdfs_status ON exam_pdfs(status);
 CREATE INDEX IF NOT EXISTS idx_exam_pages_exam ON exam_pages(exam_id);
 CREATE INDEX IF NOT EXISTS idx_parsed_questions_exam ON parsed_questions(exam_id);
 CREATE INDEX IF NOT EXISTS idx_parsed_questions_status ON parsed_questions(status);
+
+-- ============================================
+-- FASE 3: Test Question Generation
+-- ============================================
+
+-- Sesiones de generacion de preguntas
+CREATE TABLE IF NOT EXISTS generation_sessions (
+  id TEXT PRIMARY KEY,                        -- UUID
+  subject_id TEXT NOT NULL,
+  student_id TEXT,                            -- Opcional: identificar estudiante
+  deliverable_id TEXT,                        -- Opcional: enlazar con entregable (Fase 2)
+  session_mode TEXT NOT NULL DEFAULT 'test',  -- "test" | "verification"
+  topic_focus TEXT,                           -- JSON array de secciones a enfocar
+  difficulty TEXT DEFAULT 'mixed',            -- easy, medium, hard, mixed
+  question_count INTEGER DEFAULT 10,
+  status TEXT DEFAULT 'pending',              -- pending, generating, completed, error
+  error_message TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  completed_at DATETIME,
+  FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
+  -- deliverable_id FK omitido: Fase 2 opcional
+);
+
+-- Preguntas generadas por IA (tipo test)
+CREATE TABLE IF NOT EXISTS generated_test_questions (
+  id TEXT PRIMARY KEY,                        -- UUID
+  session_id TEXT NOT NULL,
+  question_number INTEGER,
+  content TEXT NOT NULL,                      -- Texto de la pregunta
+  options TEXT NOT NULL,                      -- JSON: {a, b, c, d}
+  correct_answer TEXT NOT NULL,               -- "a", "b", "c", "d"
+  explanation TEXT NOT NULL,                  -- Explicacion de la respuesta correcta
+  wrong_explanations TEXT,                    -- JSON: explicacion por opcion incorrecta
+  rationale TEXT,                             -- Por que se genero esta pregunta
+  targeted_weakness TEXT,                     -- Debilidad que ataca
+  based_on_section TEXT,                      -- Seccion del trabajo relacionada
+  difficulty TEXT DEFAULT 'medium',           -- easy, medium, hard
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (session_id) REFERENCES generation_sessions(id) ON DELETE CASCADE
+);
+
+-- Intentos en preguntas generadas
+CREATE TABLE IF NOT EXISTS generated_question_attempts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  question_id TEXT NOT NULL,
+  session_id TEXT NOT NULL,
+  user_answer TEXT NOT NULL,                  -- "a", "b", "c", "d"
+  is_correct BOOLEAN NOT NULL,
+  time_spent_seconds INTEGER,
+  attempted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (question_id) REFERENCES generated_test_questions(id) ON DELETE CASCADE,
+  FOREIGN KEY (session_id) REFERENCES generation_sessions(id) ON DELETE CASCADE
+);
+
+-- Indexes for generation
+CREATE INDEX IF NOT EXISTS idx_generation_sessions_subject ON generation_sessions(subject_id);
+CREATE INDEX IF NOT EXISTS idx_generation_sessions_deliverable ON generation_sessions(deliverable_id);
+CREATE INDEX IF NOT EXISTS idx_generation_sessions_status ON generation_sessions(status);
+CREATE INDEX IF NOT EXISTS idx_generated_questions_session ON generated_test_questions(session_id);
+CREATE INDEX IF NOT EXISTS idx_generated_attempts_question ON generated_question_attempts(question_id);
+CREATE INDEX IF NOT EXISTS idx_generated_attempts_session ON generated_question_attempts(session_id);

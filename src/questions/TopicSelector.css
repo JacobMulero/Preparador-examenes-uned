@@ -1,107 +1,110 @@
+/* ===========================================
+   Topic Selector - Notion Style Grid
+   =========================================== */
+
 .topic-selector {
   width: 100%;
 }
 
 .topic-header {
-  text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-6);
 }
 
 .page-title {
-  font-size: 1.875rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
 }
 
 .page-subtitle {
-  color: var(--color-text-muted);
-  font-size: 1rem;
+  font-size: 14px;
+  color: var(--text-muted);
 }
 
+/* Topics Grid - 2 columns */
 .topics-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+  gap: var(--space-3);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .topics-grid {
     grid-template-columns: 1fr;
   }
 }
 
+/* Topic Card - Notion style */
 .topic-card {
   display: flex;
   flex-direction: column;
-  padding: 1.25rem;
-  background-color: var(--color-bg-primary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
   text-decoration: none;
   color: inherit;
-  transition: all 0.2s ease;
+  transition: background-color var(--transition-fast);
 }
 
 .topic-card:hover {
-  border-color: var(--color-accent);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  background-color: var(--bg-hover);
 }
 
+/* Skeleton loading */
 .skeleton-card {
   pointer-events: none;
-  padding: 1.5rem;
+  padding: var(--space-5);
 }
 
 .skeleton-card .skeleton {
-  height: 1rem;
-  margin-bottom: 0.75rem;
+  height: 14px;
+  margin-bottom: var(--space-3);
 }
 
+/* Card Header */
 .topic-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--space-2);
 }
 
 .topic-number {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.25rem 0.625rem;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--color-accent);
-  background-color: var(--color-accent-light);
-  border-radius: var(--radius-full);
+  color: var(--accent-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .topic-count {
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
+/* Topic Info */
 .topic-name {
-  font-size: 1.125rem;
+  font-size: 15px;
   font-weight: 600;
-  margin-bottom: 0.375rem;
-  color: var(--color-text-primary);
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
 }
 
 .topic-description {
-  font-size: 0.875rem;
-  color: var(--color-text-secondary);
+  font-size: 13px;
+  color: var(--text-secondary);
   line-height: 1.5;
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-3);
   flex: 1;
 }
 
+/* Topic Progress */
 .topic-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
   margin-top: auto;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-light);
 }
 
 .topic-progress {
@@ -112,34 +115,30 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.375rem;
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
-.topic-success-rate {
-  display: flex;
-  align-items: center;
-}
-
+/* Success badges */
 .success-badge {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 500;
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--radius-full);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
 }
 
 .success-badge.good {
-  background-color: var(--color-success-bg);
-  color: var(--color-success);
+  background-color: var(--accent-green-light);
+  color: var(--accent-green);
 }
 
 .success-badge.medium {
-  background-color: var(--color-warning-bg);
-  color: var(--color-warning);
+  background-color: var(--accent-orange-light);
+  color: var(--accent-orange);
 }
 
 .success-badge.low {
-  background-color: var(--color-error-bg);
-  color: var(--color-error);
+  background-color: var(--accent-red-light);
+  color: var(--accent-red);
 }

@@ -1,57 +1,84 @@
+/* ===========================================
+   Question Card - Notion Style
+   =========================================== */
+
 .question-card {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-5);
+}
+
+/* Card Header */
+.question-card .card-header {
+  padding: var(--space-4) var(--space-5);
+  background-color: transparent;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .question-meta {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--space-3);
 }
 
 .question-number {
+  font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--text-primary);
 }
 
 .question-page {
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
+/* Card Body */
+.question-card .card-body {
+  padding: var(--space-5);
+}
+
+/* Shared Statement Block */
 .question-statement {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background-color: var(--color-bg-secondary);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  background-color: var(--bg-secondary);
   border-radius: var(--radius-md);
-  border-left: 3px solid var(--color-accent);
+  border: 1px solid var(--border-light);
 }
 
 .statement-label {
-  font-size: 0.75rem;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-accent);
-  margin-bottom: 0.5rem;
+  color: var(--accent-blue);
+  margin-bottom: var(--space-2);
 }
 
 .statement-content {
-  font-size: 0.9375rem;
-  color: var(--color-text-secondary);
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
 }
 
+/* Question Text */
 .question-text {
-  margin-bottom: 1.5rem;
-  font-size: 1rem;
+  margin-bottom: var(--space-5);
+  font-size: 15px;
   line-height: 1.7;
+  color: var(--text-primary);
 }
 
+/* Options Container */
 .question-options {
-  margin-top: 1rem;
+  margin-top: var(--space-4);
 }
 
 .question-options .radio-option {
   position: relative;
+  margin-bottom: var(--space-2);
+}
+
+.question-options .radio-option:last-child {
+  margin-bottom: 0;
 }
 
 .question-options .radio-option-label {
@@ -66,96 +93,100 @@
   font-size: inherit;
 }
 
-/* Option indicators */
+/* Option Indicators */
 .option-indicator {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   margin-left: auto;
   flex-shrink: 0;
 }
 
 .correct-indicator {
-  background-color: var(--color-success);
+  background-color: var(--accent-green);
   color: white;
 }
 
 .incorrect-indicator {
-  background-color: var(--color-error);
+  background-color: var(--accent-red);
   color: white;
 }
 
-/* Styling for formulas and special characters */
+/* Formulas and Code */
 .question-text .markdown-content,
 .statement-content .markdown-content,
 .radio-option-label .markdown-content {
-  /* Support for mathematical symbols */
   font-feature-settings: 'liga' 0;
 }
 
-/* Custom styling for common formula patterns */
 .question-text code,
 .statement-content code,
 .radio-option-label code {
   font-family: var(--font-mono);
-  font-size: 0.9em;
-  padding: 0.1em 0.3em;
-  background-color: var(--color-bg-tertiary);
-  border-radius: var(--radius-sm);
+  font-size: 13px;
+  padding: 2px 6px;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-xs);
 }
 
-/* Table styles for markdown tables */
+/* Markdown Tables */
 .markdown-content table {
   width: 100%;
   border-collapse: collapse;
-  margin: 1rem 0;
-  font-size: 0.9rem;
+  margin: var(--space-4) 0;
+  font-size: 13px;
 }
 
 .markdown-content th,
 .markdown-content td {
-  border: 1px solid var(--color-border);
-  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-default);
+  padding: var(--space-2) var(--space-3);
   text-align: left;
 }
 
 .markdown-content th {
-  background-color: var(--color-bg-tertiary);
+  background-color: var(--bg-tertiary);
   font-weight: 600;
 }
 
 .markdown-content tr:nth-child(even) {
-  background-color: var(--color-bg-secondary);
+  background-color: var(--bg-secondary);
 }
 
-.markdown-content tr:hover {
-  background-color: var(--color-bg-tertiary);
-}
-
-/* Skeleton loading for question */
+/* Skeleton Loading */
 .question-card-skeleton {
-  padding: 1.5rem;
+  padding: var(--space-5);
 }
 
 .question-card-skeleton .skeleton {
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--space-3);
 }
 
 .question-card-skeleton .skeleton-title {
-  height: 1.5rem;
+  height: 20px;
   width: 30%;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-5);
 }
 
 .question-card-skeleton .skeleton-text {
-  height: 1rem;
+  height: 14px;
 }
 
 .question-card-skeleton .skeleton-option {
-  height: 3.5rem;
-  margin-bottom: 0.75rem;
+  height: 48px;
+  margin-bottom: var(--space-2);
   border-radius: var(--radius-md);
+}
+
+/* Empty State */
+.question-card .empty-state {
+  padding: var(--space-10);
+}
+
+.question-card .empty-state-icon {
+  font-size: 28px;
+  color: var(--text-muted);
 }

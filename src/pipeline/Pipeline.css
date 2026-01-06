@@ -1,50 +1,56 @@
-/* Pipeline Dashboard */
+/* ===========================================
+   Pipeline Dashboard - Notion Style
+   =========================================== */
+
 .pipeline-dashboard {
-  max-width: 1000px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 1rem;
 }
 
 .pipeline-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-4);
 }
 
 .pipeline-header h1 {
-  margin: 0;
-  font-size: 1.5rem;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2) 0;
 }
 
 .pipeline-description {
+  font-size: 14px;
   color: var(--text-secondary);
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-6);
 }
 
-/* PDF Uploader */
+/* ===========================================
+   PDF Uploader - Notion Dropzone Style
+   =========================================== */
+
 .pdf-uploader {
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-8);
 }
 
 .upload-zone {
-  border: 2px dashed var(--border-color);
-  border-radius: 12px;
-  padding: 2rem;
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-10);
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  background: var(--card-bg);
+  transition: all var(--transition-fast);
+  background: var(--bg-primary);
 }
 
 .upload-zone:hover {
-  border-color: var(--primary);
-  background: var(--hover-bg);
+  border-color: var(--accent-blue);
+  background: var(--accent-blue-light);
 }
 
 .upload-zone.active {
-  border-color: var(--primary);
-  background: var(--hover-bg);
+  border-color: var(--accent-blue);
+  border-style: solid;
+  background: var(--accent-blue-light);
 }
 
 .upload-zone.uploading {
@@ -56,276 +62,291 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-3);
 }
 
 .upload-icon {
-  font-size: 3rem;
+  font-size: 32px;
+  opacity: 0.5;
 }
 
 .upload-text {
-  font-size: 1.1rem;
+  font-size: 15px;
+  font-weight: 500;
   color: var(--text-primary);
 }
 
 .upload-hint {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
 .upload-status {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
-/* Spinner */
-.spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--border-color);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
+/* ===========================================
+   Exams Section
+   =========================================== */
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Exams Section */
 .exams-section {
-  margin-top: 2rem;
+  margin-top: var(--space-6);
 }
 
 .exams-section h2 {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
 }
 
 .exam-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-3);
 }
 
 /* Exam Card */
 .exam-card {
-  padding: 1rem 1.25rem;
+  padding: var(--space-4);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
 }
 
 .exam-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--space-3);
 }
 
 .exam-filename {
-  font-size: 1rem;
-  margin: 0 0 0.5rem 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-2) 0;
   word-break: break-word;
 }
 
 .exam-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+  gap: var(--space-3);
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .exam-card-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 
 .exam-questions-summary {
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border-color);
-  font-size: 0.85rem;
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-light);
+  font-size: 13px;
   color: var(--text-secondary);
   display: flex;
   justify-content: space-between;
 }
 
-/* Status Badge */
+/* ===========================================
+   Status Badge
+   =========================================== */
+
 .status-badge {
   display: inline-block;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .status-gray {
-  background: var(--border-color);
+  background: var(--bg-tertiary);
   color: var(--text-secondary);
 }
 
 .status-blue {
-  background: #3b82f6;
-  color: white;
+  background: var(--accent-blue-light);
+  color: var(--accent-blue);
 }
 
 .status-yellow {
-  background: #f59e0b;
-  color: white;
+  background: var(--accent-orange-light);
+  color: var(--accent-orange);
 }
 
 .status-green {
-  background: var(--success);
-  color: white;
+  background: var(--accent-green-light);
+  color: var(--accent-green);
 }
 
 .status-red {
-  background: var(--error);
-  color: white;
+  background: var(--accent-red-light);
+  color: var(--accent-red);
 }
 
-/* Question Review */
+/* ===========================================
+   Question Review
+   =========================================== */
+
 .question-review {
   max-width: 900px;
   margin: 0 auto;
-  padding: 1rem;
 }
 
 .review-header {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
 .review-header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
   margin: 0;
-  font-size: 1.25rem;
 }
 
 .review-controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: var(--space-4);
   align-items: center;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: var(--card-bg);
-  border-radius: 8px;
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
 }
 
 .filter-group,
 .topic-group {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .filter-group label,
 .topic-group label {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
 .filter-group select,
 .topic-group select {
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-  background: var(--bg);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: var(--bg-primary);
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: 13px;
 }
 
-/* Question Review Card */
+/* ===========================================
+   Question Review Card
+   =========================================== */
+
 .question-review-card {
-  padding: 1rem 1.25rem;
-  margin-bottom: 1rem;
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
 }
 
 .question-review-card.status-approved {
-  border-left: 3px solid var(--success);
+  border-left: 3px solid var(--accent-green);
 }
 
 .question-review-card.status-rejected {
-  border-left: 3px solid var(--error);
-  opacity: 0.7;
+  border-left: 3px solid var(--accent-red);
+  opacity: 0.6;
 }
 
 .question-review-card.status-pending {
-  border-left: 3px solid var(--primary);
+  border-left: 3px solid var(--accent-blue);
 }
 
 .question-number {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
+  font-size: 14px;
   font-weight: 600;
-  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
 }
 
 .question-content {
-  background: var(--bg);
-  padding: 0.75rem;
-  border-radius: 6px;
-  margin-bottom: 0.75rem;
+  background: var(--bg-secondary);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
 }
 
 .question-content pre {
   margin: 0;
   white-space: pre-wrap;
   font-family: inherit;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
 }
 
 .question-options {
   display: grid;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .question-options .option {
-  padding: 0.5rem 0.75rem;
-  background: var(--bg);
-  border-radius: 6px;
-  font-size: 0.9rem;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  color: var(--text-secondary);
 }
 
 .question-actions {
   display: flex;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border-color);
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-light);
 }
 
-/* Small buttons */
-.btn-sm {
-  padding: 0.35rem 0.75rem;
-  font-size: 0.85rem;
-}
+/* ===========================================
+   Empty and Loading States
+   =========================================== */
 
-/* Empty state */
 .empty-state {
   text-align: center;
-  padding: 2rem;
-  color: var(--text-secondary);
+  padding: var(--space-10);
+  color: var(--text-muted);
 }
 
-/* Loading */
 .loading {
   text-align: center;
-  padding: 2rem;
-  color: var(--text-secondary);
+  padding: var(--space-8);
+  color: var(--text-muted);
 }
 
-/* Responsive */
-@media (max-width: 600px) {
+/* ===========================================
+   Responsive
+   =========================================== */
+
+@media (max-width: 640px) {
   .review-controls {
     flex-direction: column;
     align-items: stretch;
@@ -343,5 +364,9 @@
 
   .exam-card-actions .btn {
     width: 100%;
+  }
+
+  .upload-zone {
+    padding: var(--space-6);
   }
 }

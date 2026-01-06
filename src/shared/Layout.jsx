@@ -32,7 +32,7 @@ function Layout({ children }) {
       <header className="header">
         <div className="header-container">
           <Link to="/" className="header-logo">
-            <span className="header-logo-icon">DB</span>
+            <span className="header-logo-dot"></span>
             <span className="header-logo-text">Exam App</span>
           </Link>
 
@@ -54,14 +54,14 @@ function Layout({ children }) {
           <button
             className="theme-toggle"
             onClick={toggleTheme}
-            title={theme === 'light' ? 'Cambiar a tema oscuro' : 'Cambiar a tema claro'}
+            aria-label={theme === 'light' ? 'Cambiar a tema oscuro' : 'Cambiar a tema claro'}
           >
             {theme === 'light' ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
               </svg>
             ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="5"></circle>
                 <line x1="12" y1="1" x2="12" y2="3"></line>
                 <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -85,7 +85,7 @@ function Layout({ children }) {
 
       <footer className="footer">
         <div className="footer-container">
-          <p>Bases de Datos Avanzadas - 6th Edition</p>
+          <span className="footer-text">Bases de Datos Avanzadas</span>
         </div>
       </footer>
     </div>

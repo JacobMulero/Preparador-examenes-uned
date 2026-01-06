@@ -1,85 +1,90 @@
+/* ===========================================
+   Subject Card - Notion Database Row Style
+   =========================================== */
+
 .subject-card {
   display: block;
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
   text-decoration: none;
   color: inherit;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: background-color var(--transition-fast);
 }
 
 .subject-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  background-color: var(--bg-hover);
 }
 
+.subject-card-content {
+  padding: var(--space-5);
+}
+
+/* Header */
 .subject-header {
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-3);
 }
 
-.subject-short {
+.subject-code {
   display: inline-block;
-  background: #4a90d9;
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-2);
 }
 
-.subject-header h2 {
+.subject-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
   margin: 0;
-  font-size: 1.25rem;
-  color: #333;
+  line-height: 1.3;
 }
 
+/* Description */
 .subject-description {
-  color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-  line-height: 1.4;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 var(--space-4) 0;
+}
+
+/* Footer */
+.subject-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-light);
 }
 
 .subject-badges {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: var(--space-2);
 }
 
-.badge {
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
+.subject-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 12px;
   font-weight: 500;
+  color: var(--text-secondary);
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
 }
 
-.badge.methodology {
-  background: #e8f4fd;
-  color: #4a90d9;
-}
-
-.subject-modes {
-  border-top: 1px solid #eee;
-  padding-top: 1rem;
-}
-
-.modes-label {
-  display: block;
-  font-size: 0.75rem;
-  color: #999;
-  margin-bottom: 0.5rem;
-}
-
-.modes-list {
+.subject-arrow {
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: color var(--transition-fast), transform var(--transition-fast);
 }
 
-.mode-badge {
-  background: #f0f0f0;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
+.subject-card:hover .subject-arrow {
+  color: var(--text-primary);
+  transform: translateX(4px);
 }

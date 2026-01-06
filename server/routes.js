@@ -11,6 +11,7 @@ import solvingRouter from './routes/solving.js';
 import statsRouter from './routes/stats.js';
 import subjectsRouter from './routes/subjects.js';
 import pipelineRouter from './routes/pipeline.js';
+import generationRouter from './routes/generation.js';
 
 const router = Router();
 
@@ -23,6 +24,9 @@ router.use('/subjects', subjectsRouter);
 
 // Pipeline routes (Fase 2): /api/pipeline
 router.use('/pipeline', pipelineRouter);
+
+// Generation routes (Fase 3): /api/generate
+router.use('/generate', generationRouter);
 
 // Questions routes: /api/topics, /api/questions/:topic, etc.
 router.use('/', questionsRouter);
@@ -58,7 +62,7 @@ router.get('/', (req, res) => {
   res.json({
     success: true,
     name: 'Exam App API',
-    version: '1.2.0',
+    version: '1.3.0',
     endpoints: {
       subjects: {
         list: 'GET /api/subjects',
@@ -104,6 +108,15 @@ router.get('/', (req, res) => {
         approveQuestion: 'POST /api/pipeline/questions/:questionId/approve',
         rejectQuestion: 'POST /api/pipeline/questions/:questionId/reject',
         approveAll: 'POST /api/pipeline/exams/:examId/approve-all'
+      },
+      generation: {
+        createSession: 'POST /api/generate/test-session',
+        startGeneration: 'POST /api/generate/sessions/:id/start',
+        getSession: 'GET /api/generate/sessions/:id',
+        getQuestions: 'GET /api/generate/sessions/:id/questions',
+        recordAttempt: 'POST /api/generate/sessions/:id/attempt',
+        getStats: 'GET /api/generate/sessions/:id/stats',
+        subjectSessions: 'GET /api/generate/subject/:subjectId/sessions'
       },
       health: 'GET /api/health'
     }

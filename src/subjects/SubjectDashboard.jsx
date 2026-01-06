@@ -53,6 +53,9 @@ function SubjectDashboard() {
           <h1>{subject.name}</h1>
           <p className="subject-description">{subject.description}</p>
           <div className="subject-actions">
+            <Link to={`/practice/${subjectId}`} className="btn btn-primary btn-sm">
+              Practicar
+            </Link>
             <Link to={`/pipeline/${subjectId}`} className="btn btn-secondary btn-sm">
               Pipeline PDFs
             </Link>
@@ -70,6 +73,11 @@ function SubjectDashboard() {
         <Link to="/" className="back-link">Cambiar asignatura</Link>
         <h1>{subject.name}</h1>
         <p className="subject-description">{subject.description}</p>
+        <div className="subject-actions">
+          <Link to={`/practice/${subjectId}`} className="btn btn-primary btn-sm">
+            Practicar
+          </Link>
+        </div>
       </div>
       <div className="coming-soon">
         <h2>Proximamente</h2>
