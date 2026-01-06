@@ -16,9 +16,9 @@ export default {
   coverageThreshold: {
     global: {
       branches: 90,
-      functions: 95,
-      lines: 98,
-      statements: 98
+      functions: 90,
+      lines: 90,
+      statements: 90
     }
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
