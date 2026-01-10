@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { pipelineApi } from '../shared/api';
 
-function PdfUploader({ subjectId, onSuccess }) {
+function PdfUploader({ subjectId, onSuccess, isDeliverable = false }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [dragActive, setDragActive] = useState(false);
@@ -24,7 +24,7 @@ function PdfUploader({ subjectId, onSuccess }) {
     setError(null);
 
     try {
-      const res = await pipelineApi.uploadPdf(file, subjectId);
+      const res = await pipelineApi.uploadPdf(file, subjectId, isDeliverable);
       if (res.data?.success) {
         onSuccess(res.data.data);
         // Reset input

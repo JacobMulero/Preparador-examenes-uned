@@ -26,8 +26,9 @@ INSTRUCCIONES:
 2. Tu respuesta debe ser CONSISTENTE con tu analisis
 3. Explica de forma DIDACTICA y COMPLETA para que el estudiante aprenda
 4. NO intentes adivinar respuestas "oficiales" - razona desde los fundamentos
+5. Si la pregunta hace referencia a figuras/tablas que no puedes ver, usa tu conocimiento teorico para inferir la respuesta mas probable basandote en el contexto y las opciones disponibles. NUNCA te niegues a responder.
 
-Responde en JSON (sin markdown, sin texto adicional).
+OBLIGATORIO: Responde SIEMPRE en formato JSON (sin markdown, sin texto adicional).
 IMPORTANTE: Escribe primero la explicacion completa, luego wrongOptions, y AL FINAL el campo answer.
 Esto asegura que tu respuesta sea consistente con tu razonamiento.
 

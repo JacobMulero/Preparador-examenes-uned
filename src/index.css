@@ -281,6 +281,15 @@ a:hover {
   color: #ffffff;
 }
 
+.btn-warning {
+  background-color: #f59e0b;
+  color: #ffffff;
+}
+
+.btn-warning:hover:not(:disabled) {
+  background-color: #d97706;
+}
+
 /* ===========================================
    Cards - Minimal borders, no shadows
    =========================================== */

@@ -252,10 +252,11 @@ export const subjectsApi = {
 
 export const pipelineApi = {
   // Upload a PDF exam
-  uploadPdf: async (file, subjectId) => {
+  uploadPdf: async (file, subjectId, isDeliverable = false) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('subjectId', subjectId);
+    formData.append('isDeliverable', isDeliverable ? 'true' : 'false');
 
     const res = await api.post('/pipeline/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -387,6 +388,67 @@ export const generationApi = {
   // Get sessions for a deliverable
   getDeliverableSessions: async (deliverableId) => {
     const res = await api.get(`/generate/deliverable/${deliverableId}/sessions`);
+    return res;
+  },
+};
+
+// ============================================
+// Verification API (Fase 4)
+// ============================================
+
+export const verificationApi = {
+  // Create a verification session
+  createSession: async (config) => {
+    const res = await api.post('/verification/sessions', config);
+    return res;
+  },
+
+  // List sessions for a subject
+  getSessions: async (subjectId) => {
+    const res = await api.get(`/verification/sessions?subjectId=${subjectId}`);
+    return res;
+  },
+
+  // Get session details with questions
+  getSession: async (sessionId) => {
+    const res = await api.get(`/verification/sessions/${sessionId}`);
+    return res;
+  },
+
+  // Start generating questions
+  generateQuestions: async (sessionId) => {
+    const res = await api.post(`/verification/sessions/${sessionId}/generate`);
+    return res;
+  },
+
+  // Start the verification session (professor is ready)
+  startSession: async (sessionId) => {
+    const res = await api.post(`/verification/sessions/${sessionId}/start`);
+    return res;
+  },
+
+  // Complete the session with final notes
+  completeSession: async (sessionId, notes = null, finalScore = null) => {
+    const res = await api.post(`/verification/sessions/${sessionId}/complete`, {
+      notes,
+      finalScore
+    });
+    return res;
+  },
+
+  // Score a single question
+  scoreQuestion: async (questionId, score, feedback = null, actualAnswer = null) => {
+    const res = await api.post(`/verification/questions/${questionId}/score`, {
+      score,
+      feedback,
+      actualAnswer
+    });
+    return res;
+  },
+
+  // Get a single question
+  getQuestion: async (questionId) => {
+    const res = await api.get(`/verification/questions/${questionId}`);
     return res;
   },
 };

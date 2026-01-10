@@ -9,6 +9,9 @@ import PipelineDashboard from './pipeline/PipelineDashboard';
 import QuestionReview from './pipeline/QuestionReview';
 import PracticeSetup from './practice/PracticeSetup';
 import GeneratedTestQuestions from './practice/GeneratedTestQuestions';
+import VerificationSetupPage from './verification/VerificationSetupPage';
+import VerificationSession from './verification/VerificationSession';
+import VerificationResults from './verification/VerificationResults';
 
 function App() {
   return (
@@ -28,6 +31,11 @@ function App() {
         {/* Fase 3: Practica con preguntas generadas */}
         <Route path="/practice/:subjectId" element={<PracticeSetup />} />
         <Route path="/practice/:subjectId/session/:sessionId" element={<GeneratedTestQuestions />} />
+
+        {/* Fase 4: Verificacion oral */}
+        <Route path="/subjects/:subjectId/verification" element={<VerificationSetupPage />} />
+        <Route path="/subjects/:subjectId/verification/:sessionId" element={<VerificationSession />} />
+        <Route path="/subjects/:subjectId/verification/:sessionId/results" element={<VerificationResults />} />
 
         {/* Compatibilidad hacia atras: redirigir rutas antiguas a BDA */}
         <Route path="/topics" element={<Navigate to="/subjects/bda" replace />} />

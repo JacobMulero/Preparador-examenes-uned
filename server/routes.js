@@ -12,6 +12,7 @@ import statsRouter from './routes/stats.js';
 import subjectsRouter from './routes/subjects.js';
 import pipelineRouter from './routes/pipeline.js';
 import generationRouter from './routes/generation.js';
+import verificationRouter from './routes/verification.js';
 
 const router = Router();
 
@@ -27,6 +28,9 @@ router.use('/pipeline', pipelineRouter);
 
 // Generation routes (Fase 3): /api/generate
 router.use('/generate', generationRouter);
+
+// Verification routes (Fase 4): /api/verification
+router.use('/verification', verificationRouter);
 
 // Questions routes: /api/topics, /api/questions/:topic, etc.
 router.use('/', questionsRouter);
@@ -117,6 +121,16 @@ router.get('/', (req, res) => {
         recordAttempt: 'POST /api/generate/sessions/:id/attempt',
         getStats: 'GET /api/generate/sessions/:id/stats',
         subjectSessions: 'GET /api/generate/subject/:subjectId/sessions'
+      },
+      verification: {
+        createSession: 'POST /api/verification/sessions',
+        listSessions: 'GET /api/verification/sessions?subjectId=',
+        getSession: 'GET /api/verification/sessions/:id',
+        generate: 'POST /api/verification/sessions/:id/generate',
+        startSession: 'POST /api/verification/sessions/:id/start',
+        completeSession: 'POST /api/verification/sessions/:id/complete',
+        scoreQuestion: 'POST /api/verification/questions/:id/score',
+        getQuestion: 'GET /api/verification/questions/:id'
       },
       health: 'GET /api/health'
     }

@@ -62,7 +62,7 @@ function generateId() {
  */
 router.post('/upload', upload.single('file'), async (req, res) => {
   try {
-    const { subjectId } = req.body;
+    const { subjectId, isDeliverable } = req.body;
 
     if (!req.file) {
       return res.status(400).json({
@@ -101,13 +101,16 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     const pageCount = await pdfService.getPdfPageCount(filePath);
 
     // Create database record
+    // isDeliverable comes as string from form data
+    const isDeliverableFlag = isDeliverable === 'true' || isDeliverable === true;
     const examPdf = createExamPdf({
       id: examId,
       subjectId,
       filename,
       originalPath: filePath,
       pageCount,
-      status: 'uploaded'
+      status: 'uploaded',
+      isDeliverable: isDeliverableFlag
     });
 
     res.json({
@@ -342,6 +345,13 @@ router.post('/exams/:examId/process', async (req, res) => {
       terminology: subject.claudeContext?.terminology
     } : null;
 
+    // Determine extraction mode based on subject type
+    // 'verification' subjects need full content extraction, 'test' subjects need test questions
+    const extractionMode = subject?.exam_type === 'verification' ? 'content' : 'test';
+
+    // Check if this is a deliverable (student work) - don't parse questions from deliverables
+    const isDeliverable = exam.is_deliverable === 1;
+
     // Update status
     updateExamPdfStatus(examId, 'parsing');
 
@@ -355,8 +365,8 @@ router.post('/exams/:examId/process', async (req, res) => {
         // Update page status
         updateExamPage(page.id, { status: 'processing' });
 
-        // Process with Vision
-        const result = await visionService.processExamPage(page.image_path, subjectContext);
+        // Process with Vision - use appropriate extraction mode
+        const result = await visionService.processExamPage(page.image_path, subjectContext, { extractionMode });
 
         if (result.success) {
           // Update page with results
@@ -366,18 +376,20 @@ router.post('/exams/:examId/process', async (req, res) => {
             status: 'completed'
           });
 
-          // Parse questions from markdown
-          const questions = visionService.parseExtractedQuestions(
-            result.rawMarkdown,
-            examId,
-            page.id
-          );
+          // Only parse questions if NOT a deliverable
+          // Deliverables are student work - we just extract content for verification questions later
+          if (!isDeliverable) {
+            // Parse questions from markdown - use appropriate parser based on extraction mode
+            const questions = extractionMode === 'content'
+              ? visionService.parseOpenQuestions(result.rawMarkdown, examId, page.id)
+              : visionService.parseExtractedQuestions(result.rawMarkdown, examId, page.id);
 
-          // Normalize and save questions
-          const normalized = visionService.normalizeQuestions(questions);
-          for (const q of normalized) {
-            createParsedQuestion(q);
-            totalQuestions++;
+            // Normalize and save questions
+            const normalized = visionService.normalizeQuestions(questions);
+            for (const q of normalized) {
+              createParsedQuestion(q);
+              totalQuestions++;
+            }
           }
         } else {
           updateExamPage(page.id, {
@@ -446,11 +458,17 @@ router.post('/exams/:examId/process-page/:pageId', async (req, res) => {
       expertise: subject.claudeContext?.expertise
     } : null;
 
+    // Determine extraction mode based on subject type
+    const extractionMode = subject?.exam_type === 'verification' ? 'content' : 'test';
+
+    // Check if this is a deliverable
+    const isDeliverable = exam.is_deliverable === 1;
+
     // Update page status
     updateExamPage(pageId, { status: 'processing' });
 
-    // Process with Vision
-    const result = await visionService.processExamPage(page.image_path, subjectContext);
+    // Process with Vision - use appropriate extraction mode
+    const result = await visionService.processExamPage(page.image_path, subjectContext, { extractionMode });
 
     if (result.success) {
       // Update page
@@ -460,12 +478,18 @@ router.post('/exams/:examId/process-page/:pageId', async (req, res) => {
         status: 'completed'
       });
 
-      // Parse and save questions
-      const questions = visionService.parseExtractedQuestions(result.rawMarkdown, examId, pageId);
-      const normalized = visionService.normalizeQuestions(questions);
+      let normalized = [];
+      // Only parse questions if NOT a deliverable
+      if (!isDeliverable) {
+        // Parse and save questions - use appropriate parser based on extraction mode
+        const questions = extractionMode === 'content'
+          ? visionService.parseOpenQuestions(result.rawMarkdown, examId, pageId)
+          : visionService.parseExtractedQuestions(result.rawMarkdown, examId, pageId);
+        normalized = visionService.normalizeQuestions(questions);
 
-      for (const q of normalized) {
-        createParsedQuestion(q);
+        for (const q of normalized) {
+          createParsedQuestion(q);
+        }
       }
 
       res.json({
@@ -475,7 +499,8 @@ router.post('/exams/:examId/process-page/:pageId', async (req, res) => {
           rawMarkdown: result.rawMarkdown,
           tokens: result.tokens,
           questionsFound: normalized.length,
-          questions: normalized
+          questions: normalized,
+          isDeliverable
         }
       });
     } else {

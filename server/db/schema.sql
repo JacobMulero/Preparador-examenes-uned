@@ -90,6 +90,7 @@ CREATE TABLE IF NOT EXISTS exam_pdfs (
   page_count INTEGER,
   status TEXT DEFAULT 'uploaded',         -- uploaded, extracting, parsing, completed, error
   error_message TEXT,
+  is_deliverable INTEGER DEFAULT 0,       -- 1 si es entregable de alumno (verificacion)
   uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   processed_at DATETIME,
   FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
@@ -192,3 +193,46 @@ CREATE INDEX IF NOT EXISTS idx_generation_sessions_status ON generation_sessions
 CREATE INDEX IF NOT EXISTS idx_generated_questions_session ON generated_test_questions(session_id);
 CREATE INDEX IF NOT EXISTS idx_generated_attempts_question ON generated_question_attempts(question_id);
 CREATE INDEX IF NOT EXISTS idx_generated_attempts_session ON generated_question_attempts(session_id);
+
+-- ============================================
+-- FASE 4: Verification Mode (Oral Questions)
+-- ============================================
+
+-- Sesiones de verificacion oral
+-- deliverable_id apunta a exam_pdfs.id (se usa el pipeline existente)
+CREATE TABLE IF NOT EXISTS verification_sessions (
+  id TEXT PRIMARY KEY,                        -- UUID
+  subject_id TEXT NOT NULL,
+  deliverable_id TEXT,                        -- ID del PDF procesado (exam_pdfs.id)
+  student_name TEXT,                          -- Nombre del alumno
+  focus_areas TEXT,                           -- JSON: areas a evaluar
+  question_count INTEGER DEFAULT 5,
+  status TEXT DEFAULT 'pending',              -- pending, generating, ready, in_progress, completed
+  score REAL,                                 -- Puntuacion final (0-10)
+  notes TEXT,                                 -- Notas del profesor
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  completed_at DATETIME,
+  FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
+);
+
+-- Preguntas de verificacion (abiertas, no tipo test)
+CREATE TABLE IF NOT EXISTS verification_questions (
+  id TEXT PRIMARY KEY,                        -- UUID
+  session_id TEXT NOT NULL,
+  question_number INTEGER NOT NULL,
+  content TEXT NOT NULL,                      -- Pregunta abierta
+  expected_answer TEXT,                       -- Respuesta esperada/guia
+  evaluation_criteria TEXT,                   -- JSON: criterios de evaluacion
+  related_section TEXT,                       -- Seccion del trabajo relacionada
+  difficulty TEXT DEFAULT 'medium',           -- easy, medium, hard
+  actual_answer TEXT,                         -- Respuesta del alumno (transcrita)
+  score REAL,                                 -- Puntuacion de esta pregunta (0-10)
+  feedback TEXT,                              -- Feedback del profesor
+  answered_at DATETIME,
+  FOREIGN KEY (session_id) REFERENCES verification_sessions(id) ON DELETE CASCADE
+);
+
+-- Indexes for verification
+CREATE INDEX IF NOT EXISTS idx_verification_sessions_subject ON verification_sessions(subject_id);
+CREATE INDEX IF NOT EXISTS idx_verification_sessions_status ON verification_sessions(status);
+CREATE INDEX IF NOT EXISTS idx_verification_questions_session ON verification_questions(session_id);

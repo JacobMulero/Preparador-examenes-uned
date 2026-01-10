@@ -10,7 +10,7 @@ import { getImageBase64, getImageMediaType } from './pdfService.js';
 const TIMEOUT_MS = 120000; // 2 minutes for vision processing
 
 /**
- * Build the prompt for exam page analysis
+ * Build the prompt for exam page analysis (TEST mode - multiple choice)
  * @param {Object} subjectContext - Subject context (expertise, terminology)
  */
 function buildExtractionPrompt(subjectContext) {
@@ -48,6 +48,38 @@ FORMATO DE SALIDA: Solo devuelve el Markdown con las preguntas, sin explicacione
 }
 
 /**
+ * Build the prompt for FULL CONTENT extraction (VERIFICATION mode)
+ * Used for subjects like DS where we need all content, not just test questions
+ * @param {Object} subjectContext - Subject context (expertise, terminology)
+ */
+function buildContentExtractionPrompt(subjectContext) {
+  const subjectInfo = subjectContext
+    ? `Esta es una página de un documento de ${subjectContext.name || 'una asignatura universitaria'}.`
+    : 'Esta es una página de un documento universitario.';
+
+  return `${subjectInfo}
+
+Analiza la imagen y extrae TODO el contenido de texto que encuentres.
+
+INSTRUCCIONES:
+1. Extrae TODO el texto visible en la imagen, manteniendo la estructura
+2. Si hay instrucciones o enunciados, inclúyelos completos
+3. Si hay preguntas (de cualquier tipo: abiertas, de desarrollo, de verificación), extráelas con su numeración
+4. Preserva el texto exactamente como aparece
+5. Si hay referencias a trabajos, proyectos o nombres específicos (como "Trabajo_obligatorio_PUF25", "AgendarCosecha", etc.), inclúyelos exactamente
+6. Si hay tablas, listas o diagramas, descríbelos lo mejor posible
+7. Usa formato Markdown para estructurar el contenido
+
+FORMATO DE SALIDA:
+- Devuelve el contenido en Markdown
+- Usa ## para títulos/secciones
+- Usa listas numeradas para preguntas
+- Preserva nombres técnicos exactamente como aparecen
+
+IMPORTANTE: Extrae TODO el contenido, no solo preguntas tipo test.`;
+}
+
+/**
  * Create an async generator that yields a single message with image
  */
 async function* createImageMessage(imagePath, prompt) {
@@ -81,9 +113,13 @@ async function* createImageMessage(imagePath, prompt) {
  * @param {string} imagePath - Path to the page image
  * @param {Object} subjectContext - Subject context
  * @param {Object} options - Additional options
+ * @param {string} options.extractionMode - 'test' for multiple choice, 'content' for full content
  */
 export async function processExamPage(imagePath, subjectContext = null, options = {}) {
-  const prompt = buildExtractionPrompt(subjectContext);
+  const extractionMode = options.extractionMode || 'test';
+  const prompt = extractionMode === 'content'
+    ? buildContentExtractionPrompt(subjectContext)
+    : buildExtractionPrompt(subjectContext);
 
   const abortController = new AbortController();
   const timeout = setTimeout(() => abortController.abort(), TIMEOUT_MS);
@@ -266,6 +302,53 @@ export async function processExamPages(pages, subjectContext = null, onProgress 
 }
 
 /**
+ * Parse raw markdown into open/verification questions (numbered lists)
+ * Used for verification mode where questions are open-ended (1, 2, 3...)
+ * @param {string} rawMarkdown - Raw markdown from Vision API
+ * @param {string} examId - Exam ID for generating question IDs
+ * @param {string} pageId - Page ID (optional)
+ */
+export function parseOpenQuestions(rawMarkdown, examId, pageId = null) {
+  const questions = [];
+
+  // Pattern for numbered questions: "1.", "2.", etc. at start of line
+  // Also matches "1)" or "1.-" formats
+  const questionPattern = /^(\d+)[.)\-]+\s+(.+?)(?=^\d+[.)\-]+\s+|^#{1,3}\s|^---|\*{3}|^Página\s+\d+|$)/gms;
+
+  let match;
+  while ((match = questionPattern.exec(rawMarkdown)) !== null) {
+    const questionNumber = parseInt(match[1], 10);
+    let content = match[2].trim();
+
+    // Clean up the content
+    content = content
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/^\s+/gm, '')
+      .replace(/\s+$/gm, '')
+      .trim();
+
+    // Skip if content is too short (likely not a real question)
+    if (content.length < 20) continue;
+
+    const pageNum = pageId ? pageId.split('_').pop() : 'x';
+    questions.push({
+      id: `${examId}_p${pageNum}_q${questionNumber}`,
+      examId,
+      pageId,
+      questionNumber,
+      rawContent: match[0].trim(),
+      normalizedContent: content,
+      options: null, // Open questions don't have options
+      isIncomplete: content.includes('[INCOMPLETO]'),
+      status: 'pending',
+      questionType: 'open' // Mark as open question
+    });
+  }
+
+  return questions;
+}
+
+/**
  * Normalize/clean extracted questions
  * @param {Array} questions - Array of parsed questions
  */
@@ -290,6 +373,7 @@ export function normalizeQuestions(questions) {
 export default {
   processExamPage,
   parseExtractedQuestions,
+  parseOpenQuestions,
   processExamPages,
   normalizeQuestions
 };

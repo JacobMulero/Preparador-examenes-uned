@@ -151,6 +151,48 @@ describe('Pipeline Routes Integration', () => {
       // Multer rejects with 500 for file filter errors
       expect([400, 500]).toContain(res.status);
     });
+
+    it('should upload with isDeliverable=true', async () => {
+      pdfService.savePdfFile.mockResolvedValue({
+        filePath: '/subjects/bda/exams/originals/deliverable.pdf',
+        filename: 'deliverable_original.pdf'
+      });
+      pdfService.getPdfPageCount.mockResolvedValue(3);
+
+      const res = await request(app)
+        .post('/api/pipeline/upload')
+        .attach('file', Buffer.from('%PDF-1.4 deliverable'), {
+          filename: 'deliverable.pdf',
+          contentType: 'application/pdf'
+        })
+        .field('subjectId', 'bda')
+        .field('isDeliverable', 'true');
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.is_deliverable).toBe(1);
+    });
+
+    it('should upload with isDeliverable=false (default)', async () => {
+      pdfService.savePdfFile.mockResolvedValue({
+        filePath: '/subjects/bda/exams/originals/exam.pdf',
+        filename: 'exam_original.pdf'
+      });
+      pdfService.getPdfPageCount.mockResolvedValue(2);
+
+      const res = await request(app)
+        .post('/api/pipeline/upload')
+        .attach('file', Buffer.from('%PDF-1.4 exam'), {
+          filename: 'exam.pdf',
+          contentType: 'application/pdf'
+        })
+        .field('subjectId', 'bda')
+        .field('isDeliverable', 'false');
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.is_deliverable).toBe(0);
+    });
   });
 
   describe('GET /api/pipeline/exams', () => {

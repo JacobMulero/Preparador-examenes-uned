@@ -1,67 +1,166 @@
+# ====================
 # Dependencies
+# ====================
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+.pnp
+.pnp.js
+.yarn/install-state.gz
 
-# Production build
+# ====================
+# Build outputs
+# ====================
 dist/
+dist-ssr/
 build/
+*.local
 
-# Environment variables
+# ====================
+# Environment & Secrets
+# ====================
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
+.claude-key
+claude.config.json
+*.pem
+*.key
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-
+# ====================
 # Database
+# ====================
+*.db
 *.sqlite
 *.sqlite3
-*.db
-exam-app.db
+server/db/*.db
+server/db/*.db-journal
+server/db/*.db-shm
+server/db/*.db-wal
+!server/db/schema.sql
 
+# ====================
+# IDE & Editors
+# ====================
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+*~
+*.sublime-workspace
+*.sublime-project
+.project
+.classpath
+.settings/
+*.iml
+
+# ====================
+# macOS
+# ====================
+.DS_Store
+.DS_Store?
+._*
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+Icon?
+
+# ====================
+# Windows
+# ====================
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# ====================
+# Linux
+# ====================
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ====================
 # Logs
+# ====================
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+.pnpm-debug.log*
 
-# Testing
+# ====================
+# Testing & Coverage
+# ====================
 coverage/
 .nyc_output/
+*.lcov
+.vitest/
 
+# ====================
 # Cache
+# ====================
 .npm
 .eslintcache
+.stylelintcache
 .cache/
-precache.log
+.parcel-cache/
+.turbo
+*.tsbuildinfo
 
-# OS Files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# ====================
+# Vite
+# ====================
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
 
+# ====================
 # Temporary files
+# ====================
 *.tmp
 *.temp
+*.bak
+*.backup
 .tmp/
 .temp/
+tmp/
+temp/
 
-# Claude API key (si se usa en archivo)
-.claude-key
-claude.config.json
+# ====================
+# Runtime data
+# ====================
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ====================
+# Optional npm cache
+# ====================
+.npm
+
+# ====================
+# Optional eslint cache
+# ====================
+.eslintcache
+
+# ====================
+# Uploaded content & generated data
+# ====================
+subjects/
+uploads/
+*.pdf
+
+# ====================
+# Misc
+# ====================
+.claude/
+*.tgz
+.yarn-integrity

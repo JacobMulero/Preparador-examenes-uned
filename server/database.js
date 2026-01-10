@@ -552,8 +552,8 @@ function migrateQuestionsSubjectId() {
  */
 function createExamPdf(examPdf) {
   const stmt = db.prepare(`
-    INSERT INTO exam_pdfs (id, subject_id, filename, original_path, page_count, status)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO exam_pdfs (id, subject_id, filename, original_path, page_count, status, is_deliverable)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
   stmt.run(
     examPdf.id,
@@ -561,7 +561,8 @@ function createExamPdf(examPdf) {
     examPdf.filename,
     examPdf.originalPath,
     examPdf.pageCount || null,
-    examPdf.status || 'uploaded'
+    examPdf.status || 'uploaded',
+    examPdf.isDeliverable ? 1 : 0
   );
   return getExamPdf(examPdf.id);
 }
@@ -1035,6 +1036,184 @@ function getSessionStats(sessionId) {
   return stmt.get(sessionId);
 }
 
+// ============================================
+// Verification Sessions Helper Functions (Fase 4)
+// ============================================
+
+/**
+ * Create a new verification session
+ * @param {Object} session - Session data
+ */
+function createVerificationSession(session) {
+  const id = session.id || generateUUID();
+  const stmt = db.prepare(`
+    INSERT INTO verification_sessions
+    (id, subject_id, deliverable_id, student_name, focus_areas, question_count, status)
+    VALUES (?, ?, ?, ?, ?, ?, 'pending')
+  `);
+  stmt.run(
+    id,
+    session.subjectId,
+    session.deliverableId || null,
+    session.studentName || null,
+    session.focusAreas ? JSON.stringify(session.focusAreas) : null,
+    session.questionCount || 5
+  );
+  return getVerificationSessionById(id);
+}
+
+/**
+ * Get verification session by ID
+ * @param {string} id - Session ID
+ */
+function getVerificationSessionById(id) {
+  const stmt = db.prepare('SELECT * FROM verification_sessions WHERE id = ?');
+  const row = stmt.get(id);
+  if (!row) return null;
+  return {
+    ...row,
+    focusAreas: row.focus_areas ? JSON.parse(row.focus_areas) : null
+  };
+}
+
+/**
+ * Get verification sessions by subject
+ * @param {string} subjectId - Subject ID
+ */
+function getVerificationSessionsBySubject(subjectId) {
+  const stmt = db.prepare(`
+    SELECT * FROM verification_sessions
+    WHERE subject_id = ?
+    ORDER BY created_at DESC
+  `);
+  return stmt.all(subjectId).map(row => ({
+    ...row,
+    focusAreas: row.focus_areas ? JSON.parse(row.focus_areas) : null
+  }));
+}
+
+/**
+ * Update verification session
+ * @param {string} id - Session ID
+ * @param {Object} updates - Fields to update
+ */
+function updateVerificationSession(id, updates) {
+  const fields = [];
+  const values = [];
+
+  if (updates.status !== undefined) {
+    fields.push('status = ?');
+    values.push(updates.status);
+  }
+  if (updates.score !== undefined) {
+    fields.push('score = ?');
+    values.push(updates.score);
+  }
+  if (updates.notes !== undefined) {
+    fields.push('notes = ?');
+    values.push(updates.notes);
+  }
+  if (updates.status === 'completed') {
+    fields.push("completed_at = datetime('now')");
+  }
+
+  if (fields.length === 0) return getVerificationSessionById(id);
+
+  values.push(id);
+  const stmt = db.prepare(`UPDATE verification_sessions SET ${fields.join(', ')} WHERE id = ?`);
+  stmt.run(...values);
+  return getVerificationSessionById(id);
+}
+
+// ============================================
+// Verification Questions Helper Functions (Fase 4)
+// ============================================
+
+/**
+ * Add a verification question
+ * @param {Object} question - Question data
+ */
+function addVerificationQuestion(question) {
+  const id = question.id || generateUUID();
+  const stmt = db.prepare(`
+    INSERT INTO verification_questions
+    (id, session_id, question_number, content, expected_answer, evaluation_criteria, related_section, difficulty)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  stmt.run(
+    id,
+    question.sessionId,
+    question.questionNumber,
+    question.content,
+    question.expectedAnswer || null,
+    question.evaluationCriteria ? JSON.stringify(question.evaluationCriteria) : null,
+    question.relatedSection || null,
+    question.difficulty || 'medium'
+  );
+  return id;
+}
+
+/**
+ * Get verification questions by session
+ * @param {string} sessionId - Session ID
+ */
+function getVerificationQuestionsBySession(sessionId) {
+  const stmt = db.prepare(`
+    SELECT * FROM verification_questions
+    WHERE session_id = ?
+    ORDER BY question_number
+  `);
+  return stmt.all(sessionId).map(row => ({
+    ...row,
+    evaluationCriteria: row.evaluation_criteria ? JSON.parse(row.evaluation_criteria) : null
+  }));
+}
+
+/**
+ * Get verification question by ID
+ * @param {string} id - Question ID
+ */
+function getVerificationQuestionById(id) {
+  const stmt = db.prepare('SELECT * FROM verification_questions WHERE id = ?');
+  const row = stmt.get(id);
+  if (!row) return null;
+  return {
+    ...row,
+    evaluationCriteria: row.evaluation_criteria ? JSON.parse(row.evaluation_criteria) : null
+  };
+}
+
+/**
+ * Score a verification question
+ * @param {string} id - Question ID
+ * @param {number} score - Score (0-10)
+ * @param {string} feedback - Feedback from professor
+ * @param {string} actualAnswer - Transcribed answer from student
+ */
+function scoreVerificationQuestion(id, score, feedback = null, actualAnswer = null) {
+  const stmt = db.prepare(`
+    UPDATE verification_questions
+    SET score = ?, feedback = ?, actual_answer = ?, answered_at = datetime('now')
+    WHERE id = ?
+  `);
+  stmt.run(score, feedback, actualAnswer, id);
+  return getVerificationQuestionById(id);
+}
+
+/**
+ * Calculate verification session final score
+ * @param {string} sessionId - Session ID
+ */
+function calculateVerificationSessionScore(sessionId) {
+  const stmt = db.prepare(`
+    SELECT AVG(score) as avg_score, COUNT(*) as answered,
+           (SELECT question_count FROM verification_sessions WHERE id = ?) as total
+    FROM verification_questions
+    WHERE session_id = ? AND score IS NOT NULL
+  `);
+  return stmt.get(sessionId, sessionId);
+}
+
 // Export database instance and helper functions
 export {
   db,
@@ -1096,5 +1275,15 @@ export {
   getGeneratedQuestionById,
   recordGeneratedAttempt,
   getGeneratedAttemptsBySession,
-  getSessionStats
+  getSessionStats,
+  // Verification Sessions (Fase 4)
+  createVerificationSession,
+  getVerificationSessionById,
+  getVerificationSessionsBySubject,
+  updateVerificationSession,
+  addVerificationQuestion,
+  getVerificationQuestionsBySession,
+  getVerificationQuestionById,
+  scoreVerificationQuestion,
+  calculateVerificationSessionScore
 };

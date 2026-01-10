@@ -288,4 +288,68 @@ describe('Solving Routes with Mocked Claude', () => {
       expect([200, 500]).toContain(res.status);
     });
   });
+
+  describe('GET /api/solve/:questionId', () => {
+    beforeEach(() => {
+      db.prepare(`DELETE FROM solutions_cache WHERE question_id LIKE '${TEST_PREFIX}%'`).run();
+      // Create test question for cache tests
+      upsertQuestion({
+        id: testId('cache_q1'),
+        topic: 'CacheTestTema',
+        question_number: 99,
+        content: 'Cache test question',
+        options: { a: 'A', b: 'B', c: 'C', d: 'D' }
+      });
+      upsertQuestion({
+        id: testId('cache_null'),
+        topic: 'CacheTestTema',
+        question_number: 98,
+        content: 'Cache null test question',
+        options: { a: 'A', b: 'B', c: 'C', d: 'D' }
+      });
+    });
+
+    it('should return cached solution', async () => {
+      // Pre-cache a solution
+      cacheSolution({
+        question_id: testId('cache_q1'),
+        correct_answer: 'b',
+        explanation: 'B is correct',
+        wrong_options: { a: 'Wrong A', c: 'Wrong C', d: 'Wrong D' }
+      });
+
+      const res = await request(app)
+        .get(`/api/solve/${testId('cache_q1')}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.cached).toBe(true);
+      expect(res.body.data.answer).toBe('b');
+      expect(res.body.data.explanation).toBe('B is correct');
+      expect(res.body.data.wrongOptions.a).toBe('Wrong A');
+    });
+
+    it('should return 404 for uncached question', async () => {
+      const res = await request(app)
+        .get(`/api/solve/${testId('nonexistent')}`);
+
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+    });
+
+    it('should handle null wrong_options in cache', async () => {
+      // Cache a solution with null wrong_options (to cover || {} branch)
+      db.prepare(`
+        INSERT INTO solutions_cache (question_id, correct_answer, explanation, wrong_options, solved_at)
+        VALUES (?, ?, ?, NULL, CURRENT_TIMESTAMP)
+      `).run(testId('cache_null'), 'a', 'Test explanation');
+
+      const res = await request(app)
+        .get(`/api/solve/${testId('cache_null')}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.wrongOptions).toEqual({});
+    });
+  });
 });

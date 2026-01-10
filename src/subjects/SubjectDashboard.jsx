@@ -59,6 +59,11 @@ function SubjectDashboard() {
             <Link to={`/pipeline/${subjectId}`} className="btn btn-secondary btn-sm">
               Pipeline PDFs
             </Link>
+            {subject.modes?.includes('verification') && (
+              <Link to={`/subjects/${subjectId}/verification`} className="btn btn-warning btn-sm">
+                Verificacion Oral
+              </Link>
+            )}
           </div>
         </div>
         <TopicSelector />
@@ -66,7 +71,7 @@ function SubjectDashboard() {
     );
   }
 
-  // Placeholder para otras asignaturas (se implementara en fases posteriores)
+  // Dashboard para otras asignaturas (DS, etc.)
   return (
     <div className="subject-dashboard">
       <div className="subject-dashboard-header">
@@ -77,12 +82,20 @@ function SubjectDashboard() {
           <Link to={`/practice/${subjectId}`} className="btn btn-primary btn-sm">
             Practicar
           </Link>
+          <Link to={`/pipeline/${subjectId}`} className="btn btn-secondary btn-sm">
+            Pipeline PDFs
+          </Link>
+          {subject.modes?.includes('verification') && (
+            <Link to={`/subjects/${subjectId}/verification`} className="btn btn-warning btn-sm">
+              Verificacion Oral
+            </Link>
+          )}
         </div>
       </div>
       <div className="coming-soon">
-        <h2>Proximamente</h2>
-        <p>Esta asignatura estara disponible en futuras actualizaciones.</p>
+        <h2>Selecciona un modo</h2>
         <p>Modos disponibles: {subject.modes?.join(', ')}</p>
+        <p>Usa "Pipeline PDFs" para subir examenes y extraer preguntas.</p>
       </div>
     </div>
   );

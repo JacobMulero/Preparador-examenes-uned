@@ -13,6 +13,7 @@ function PipelineDashboard() {
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [uploadAsDeliverable, setUploadAsDeliverable] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -83,10 +84,29 @@ function PipelineDashboard() {
       </div>
 
       <p className="pipeline-description">
-        Sube PDFs de examenes anteriores para extraer preguntas automaticamente usando Claude Vision.
+        {subject?.modes?.includes('verification')
+          ? 'Sube PDFs de entregables de alumnos para verificacion oral, o examenes anteriores para extraer preguntas.'
+          : 'Sube PDFs de examenes anteriores para extraer preguntas automaticamente usando Claude Vision.'}
       </p>
 
-      <PdfUploader subjectId={subjectId} onSuccess={handleUploadSuccess} />
+      {subject?.modes?.includes('verification') && (
+        <div className="deliverable-toggle">
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={uploadAsDeliverable}
+              onChange={(e) => setUploadAsDeliverable(e.target.checked)}
+            />
+            <span>Marcar como entregable de alumno (para verificacion oral)</span>
+          </label>
+        </div>
+      )}
+
+      <PdfUploader
+        subjectId={subjectId}
+        onSuccess={handleUploadSuccess}
+        isDeliverable={uploadAsDeliverable}
+      />
 
       <div className="exams-section">
         <h2>Examenes ({exams.length})</h2>

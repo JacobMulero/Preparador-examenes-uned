@@ -23,6 +23,7 @@ jest.unstable_mockModule('../../server/services/pdfService.js', () => ({
 const {
   processExamPage,
   parseExtractedQuestions,
+  parseOpenQuestions,
   processExamPages,
   normalizeQuestions
 } = await import('../../server/services/visionService.js');
@@ -647,6 +648,147 @@ d) Updates user with id 1
     });
   });
 
+  describe('parseOpenQuestions', () => {
+    it('should parse numbered questions (1. format)', () => {
+      const markdown = `## Enunciado
+
+1. Enumere el nombre de los casos de uso de su respuesta a la pregunta 1 del trabajo.
+
+2. Describe el flujo principal del caso de uso que diseñaste.
+
+3. Explica por qué elegiste ese patrón de diseño.
+
+---
+Página 1 de 2`;
+
+      const questions = parseOpenQuestions(markdown, 'exam123', 'page_1');
+
+      expect(questions).toHaveLength(3);
+      expect(questions[0].questionNumber).toBe(1);
+      expect(questions[0].normalizedContent).toContain('Enumere el nombre');
+      expect(questions[1].questionNumber).toBe(2);
+      expect(questions[2].questionNumber).toBe(3);
+    });
+
+    it('should parse questions with 1) format', () => {
+      const markdown = `1) Primera pregunta con este formato diferente.
+
+2) Segunda pregunta con paréntesis.`;
+
+      const questions = parseOpenQuestions(markdown, 'exam123', 'page_1');
+
+      expect(questions).toHaveLength(2);
+      expect(questions[0].questionNumber).toBe(1);
+      expect(questions[1].questionNumber).toBe(2);
+    });
+
+    it('should skip very short content (less than 20 chars)', () => {
+      const markdown = `1. Short.
+
+2. This is a proper question with enough content to be valid.`;
+
+      const questions = parseOpenQuestions(markdown, 'exam123', 'page_1');
+
+      expect(questions).toHaveLength(1);
+      expect(questions[0].questionNumber).toBe(2);
+    });
+
+    it('should return empty array for no questions', () => {
+      const markdown = `Este es un texto sin preguntas numeradas.
+Solo contenido descriptivo.`;
+
+      const questions = parseOpenQuestions(markdown, 'exam123', 'page_1');
+
+      expect(questions).toEqual([]);
+    });
+
+    it('should set questionType to open', () => {
+      const markdown = `1. Esta es una pregunta abierta de verificación oral.`;
+
+      const questions = parseOpenQuestions(markdown, 'exam123', 'page_1');
+
+      expect(questions[0].questionType).toBe('open');
+    });
+
+    it('should set options to null for open questions', () => {
+      const markdown = `1. Pregunta abierta sin opciones múltiples que debe responder oralmente.`;
+
+      const questions = parseOpenQuestions(markdown, 'exam123', 'page_1');
+
+      expect(questions[0].options).toBeNull();
+    });
+
+    it('should generate unique IDs with page info', () => {
+      const markdown = `1. Pregunta de prueba con contenido suficiente.`;
+
+      const questions = parseOpenQuestions(markdown, 'exam123', 'page_5');
+
+      expect(questions[0].id).toBe('exam123_p5_q1');
+      expect(questions[0].examId).toBe('exam123');
+      expect(questions[0].pageId).toBe('page_5');
+    });
+
+    it('should handle null pageId', () => {
+      const markdown = `1. Pregunta de prueba con contenido suficiente.`;
+
+      const questions = parseOpenQuestions(markdown, 'exam123', null);
+
+      expect(questions[0].id).toBe('exam123_px_q1');
+    });
+
+    it('should mark incomplete questions', () => {
+      const markdown = `1. Esta pregunta está incompleta [INCOMPLETO]`;
+
+      const questions = parseOpenQuestions(markdown, 'exam123', 'page_1');
+
+      expect(questions[0].isIncomplete).toBe(true);
+    });
+
+    it('should set status to pending', () => {
+      const markdown = `1. Pregunta de prueba con contenido suficiente.`;
+
+      const questions = parseOpenQuestions(markdown, 'exam123', 'page_1');
+
+      expect(questions[0].status).toBe('pending');
+    });
+
+    it('should preserve raw content', () => {
+      const markdown = `1. Pregunta de prueba con contenido suficiente para verificar.`;
+
+      const questions = parseOpenQuestions(markdown, 'exam123', 'page_1');
+
+      expect(questions[0].rawContent).toContain('Pregunta de prueba');
+    });
+
+    it('should trim leading and trailing whitespace', () => {
+      const markdown = `1.   Pregunta con espacios al inicio y final   `;
+
+      const questions = parseOpenQuestions(markdown, 'exam123', 'page_1');
+
+      expect(questions[0].normalizedContent).not.toMatch(/^\s/);
+      expect(questions[0].normalizedContent).not.toMatch(/\s$/);
+    });
+
+    it('should handle empty markdown', () => {
+      const questions = parseOpenQuestions('', 'exam123', 'page_1');
+
+      expect(questions).toEqual([]);
+    });
+
+    it('should stop at page markers', () => {
+      const markdown = `1. Primera pregunta completa con contenido.
+
+Página 1 de 2
+
+2. Esta debería cortarse por el marcador de página.`;
+
+      const questions = parseOpenQuestions(markdown, 'exam123', 'page_1');
+
+      expect(questions.length).toBeGreaterThanOrEqual(1);
+      expect(questions[0].questionNumber).toBe(1);
+    });
+  });
+
   describe('default export', () => {
     it('should export all functions', async () => {
       const visionService = await import('../../server/services/visionService.js');
@@ -654,6 +796,7 @@ d) Updates user with id 1
 
       expect(defaultExport.processExamPage).toBeDefined();
       expect(defaultExport.parseExtractedQuestions).toBeDefined();
+      expect(defaultExport.parseOpenQuestions).toBeDefined();
       expect(defaultExport.processExamPages).toBeDefined();
       expect(defaultExport.normalizeQuestions).toBeDefined();
     });
