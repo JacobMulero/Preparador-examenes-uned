@@ -15,7 +15,12 @@ import {
   getAllTopics,
   getRandomQuestion,
   getNextUnansweredQuestion,
-  getSubjectById
+  getSubjectById,
+  getRandomQuestionsAllTopics,
+  getCorrectlyAnsweredQuestionIds,
+  getQuestionCountBySubject,
+  getAdaptiveQuestions,
+  getAdaptiveModeStats
 } from '../database.js';
 import { parseQuestionFile, getAvailableTopics } from '../questionParser.js';
 
@@ -343,6 +348,122 @@ router.get('/subjects/:subjectId/question/:questionId', (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch question',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/subjects/:subjectId/exam-mode
+ * Returns random questions from all topics for exam simulation
+ * Query params:
+ *   - count: number of questions (default: 20, max: 50)
+ *   - excludeAnswered: if 'true', exclude correctly answered questions
+ */
+router.get('/subjects/:subjectId/exam-mode', (req, res) => {
+  try {
+    const { subjectId } = req.params;
+    const count = Math.min(parseInt(req.query.count) || 20, 50);
+    const excludeAnswered = req.query.excludeAnswered === 'true';
+
+    const subject = getSubjectById(subjectId);
+    if (!subject) {
+      return res.status(404).json({
+        success: false,
+        error: 'Subject not found'
+      });
+    }
+
+    // Ensure all topics are loaded for BDA subject
+    if (subjectId === 'bda') {
+      const dataDir = getQuestionsDir();
+      const availableTopics = getAvailableTopics(dataDir);
+      for (const topic of availableTopics) {
+        ensureTopicLoaded(topic, subjectId);
+      }
+    }
+
+    // Get IDs to exclude if needed
+    let excludeIds = [];
+    if (excludeAnswered) {
+      excludeIds = getCorrectlyAnsweredQuestionIds(subjectId);
+    }
+
+    // Get random questions
+    const questions = getRandomQuestionsAllTopics(count, subjectId, excludeIds);
+    const totalAvailable = getQuestionCountBySubject(subjectId);
+
+    res.json({
+      success: true,
+      data: {
+        sessionId: `exam_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        questions,
+        totalQuestions: questions.length,
+        totalAvailable,
+        excludedCount: excludeIds.length
+      }
+    });
+  } catch (error) {
+    console.error('[API] Error starting exam mode:', error.message);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to start exam mode',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/subjects/:subjectId/adaptive-mode
+ * Returns questions prioritizing least-seen and failed ones
+ * Query params:
+ *   - count: number of questions (default: 20, max: 50)
+ */
+router.get('/subjects/:subjectId/adaptive-mode', (req, res) => {
+  try {
+    const { subjectId } = req.params;
+    const count = Math.min(parseInt(req.query.count) || 20, 50);
+
+    const subject = getSubjectById(subjectId);
+    if (!subject) {
+      return res.status(404).json({
+        success: false,
+        error: 'Subject not found'
+      });
+    }
+
+    // Ensure all topics are loaded for BDA subject
+    if (subjectId === 'bda') {
+      const dataDir = getQuestionsDir();
+      const availableTopics = getAvailableTopics(dataDir);
+      for (const topic of availableTopics) {
+        ensureTopicLoaded(topic, subjectId);
+      }
+    }
+
+    // Get adaptive questions (prioritizes unseen and failed)
+    const questions = getAdaptiveQuestions(count, subjectId);
+    const stats = getAdaptiveModeStats(subjectId);
+
+    res.json({
+      success: true,
+      data: {
+        sessionId: `adaptive_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        questions,
+        totalQuestions: questions.length,
+        stats: {
+          total: stats.total,
+          neverSeen: stats.never_seen,
+          failed: stats.failed,
+          mastered: stats.mastered
+        }
+      }
+    });
+  } catch (error) {
+    console.error('[API] Error starting adaptive mode:', error.message);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to start adaptive mode',
       message: error.message
     });
   }

@@ -159,6 +159,147 @@ function getNextUnansweredQuestion(topic, subjectId = 'bda') {
 }
 
 // ============================================
+// Exam Mode Helper Functions
+// ============================================
+
+/**
+ * Get random questions from all topics for exam mode
+ * @param {number} count - Number of questions
+ * @param {string} subjectId - Subject ID
+ * @param {string[]} excludeIds - Question IDs to exclude (optional)
+ */
+function getRandomQuestionsAllTopics(count, subjectId = 'bda', excludeIds = []) {
+  let query = `
+    SELECT * FROM questions
+    WHERE subject_id = ?
+  `;
+  const params = [subjectId];
+
+  if (excludeIds.length > 0) {
+    const placeholders = excludeIds.map(() => '?').join(',');
+    query += ` AND id NOT IN (${placeholders})`;
+    params.push(...excludeIds);
+  }
+
+  query += ` ORDER BY RANDOM() LIMIT ?`;
+  params.push(count);
+
+  const stmt = db.prepare(query);
+  const rows = stmt.all(...params);
+  return rows.map(row => ({
+    ...row,
+    options: JSON.parse(row.options)
+  }));
+}
+
+/**
+ * Get IDs of questions that have been correctly answered
+ * @param {string} subjectId - Subject ID (optional)
+ */
+function getCorrectlyAnsweredQuestionIds(subjectId = null) {
+  let query = `
+    SELECT DISTINCT q.id
+    FROM questions q
+    INNER JOIN (
+      SELECT question_id, is_correct,
+             ROW_NUMBER() OVER (PARTITION BY question_id ORDER BY attempted_at DESC, id DESC) as rn
+      FROM attempts
+    ) a ON q.id = a.question_id AND a.rn = 1
+    WHERE a.is_correct = 1
+  `;
+  const params = [];
+
+  if (subjectId) {
+    query += ` AND q.subject_id = ?`;
+    params.push(subjectId);
+  }
+
+  const stmt = db.prepare(query);
+  const rows = stmt.all(...params);
+  return rows.map(row => row.id);
+}
+
+/**
+ * Get count of questions by subject
+ * @param {string} subjectId - Subject ID
+ */
+function getQuestionCountBySubject(subjectId = 'bda') {
+  const stmt = db.prepare(`SELECT COUNT(*) as count FROM questions WHERE subject_id = ?`);
+  return stmt.get(subjectId).count;
+}
+
+// ============================================
+// Adaptive Mode Functions
+// ============================================
+
+/**
+ * Get questions prioritizing least-seen and failed ones
+ * Scoring: never seen = 100, failed = 50, correct = 0
+ * @param {number} count - Number of questions to retrieve
+ * @param {string} subjectId - Subject ID
+ */
+function getAdaptiveQuestions(count, subjectId = 'bda') {
+  // This query assigns priority scores:
+  // - Questions never attempted: 100 points
+  // - Questions with last attempt failed: 50 points
+  // - Questions with last attempt correct: 0 points
+  // Then sorts by score desc with randomness for equal scores
+  const stmt = db.prepare(`
+    WITH question_scores AS (
+      SELECT
+        q.*,
+        CASE
+          WHEN latest.question_id IS NULL THEN 100
+          WHEN latest.is_correct = 0 THEN 50
+          ELSE 0
+        END as priority_score,
+        latest.attempted_at as last_attempt
+      FROM questions q
+      LEFT JOIN (
+        SELECT question_id, is_correct, attempted_at,
+               ROW_NUMBER() OVER (PARTITION BY question_id ORDER BY attempted_at DESC, id DESC) as rn
+        FROM attempts
+      ) latest ON q.id = latest.question_id AND latest.rn = 1
+      WHERE q.subject_id = ?
+    )
+    SELECT * FROM question_scores
+    ORDER BY priority_score DESC, RANDOM()
+    LIMIT ?
+  `);
+
+  const rows = stmt.all(subjectId, count);
+  return rows.map(row => ({
+    ...row,
+    options: JSON.parse(row.options),
+    priority_score: row.priority_score,
+    last_attempt: row.last_attempt
+  }));
+}
+
+/**
+ * Get question stats for adaptive mode display
+ * @param {string} subjectId - Subject ID
+ */
+function getAdaptiveModeStats(subjectId = 'bda') {
+  const stmt = db.prepare(`
+    SELECT
+      COUNT(*) as total,
+      SUM(CASE WHEN latest.question_id IS NULL THEN 1 ELSE 0 END) as never_seen,
+      SUM(CASE WHEN latest.is_correct = 0 THEN 1 ELSE 0 END) as failed,
+      SUM(CASE WHEN latest.is_correct = 1 THEN 1 ELSE 0 END) as mastered
+    FROM questions q
+    LEFT JOIN (
+      SELECT question_id, is_correct,
+             ROW_NUMBER() OVER (PARTITION BY question_id ORDER BY attempted_at DESC, id DESC) as rn
+      FROM attempts
+    ) latest ON q.id = latest.question_id AND latest.rn = 1
+    WHERE q.subject_id = ?
+  `);
+
+  return stmt.get(subjectId);
+}
+
+// ============================================
 // Attempt Helper Functions
 // ============================================
 
@@ -1226,6 +1367,13 @@ export {
   getAllTopics,
   getRandomQuestion,
   getNextUnansweredQuestion,
+  // Exam Mode
+  getRandomQuestionsAllTopics,
+  getCorrectlyAnsweredQuestionIds,
+  getQuestionCountBySubject,
+  // Adaptive Mode
+  getAdaptiveQuestions,
+  getAdaptiveModeStats,
   // Attempts
   recordAttempt,
   getAttemptsByQuestion,

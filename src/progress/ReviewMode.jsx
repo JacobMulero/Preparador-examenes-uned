@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { progressApi, questionsApi, solvingApi } from '../shared/api';
-import QuestionCard from '../questions/QuestionCard';
-import SolveButton from '../solving/SolveButton';
-import AnswerPanel from '../solving/AnswerPanel';
+import { useQuestionSession } from '../shared/hooks/useQuestionSession';
+import QuestionSession from '../shared/components/QuestionSession';
+import { progressApi, questionsApi } from '../shared/api';
 import StatsPanel from './StatsPanel';
 import './ReviewMode.css';
 
@@ -15,21 +14,7 @@ const FILTER_OPTIONS = [
 
 function ReviewMode() {
   const [filter, setFilter] = useState('failed');
-  const [questions, setQuestions] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [result, setResult] = useState(null);
-  const [solving, setSolving] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [stats, setStats] = useState(null);
-
-  const currentQuestion = questions[currentIndex];
-
-  // Load questions based on filter
-  useEffect(() => {
-    loadQuestions();
-  }, [filter]);
 
   // Load stats on mount
   useEffect(() => {
@@ -45,140 +30,51 @@ function ReviewMode() {
     }
   };
 
-  const loadQuestions = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      let res;
-      switch (filter) {
-        case 'failed':
-          res = await progressApi.getFailedQuestions();
-          break;
-        case 'unanswered':
-          res = await progressApi.getUnansweredQuestions();
-          break;
-        default:
-          // Get all questions from all topics
-          const topicsRes = await questionsApi.getTopics();
-          const allQuestions = [];
-          for (const topic of topicsRes.data) {
-            const questionsRes = await questionsApi.getQuestions(topic.id);
-            allQuestions.push(...questionsRes.data);
-          }
-          res = { data: allQuestions };
-      }
-
-      setQuestions(res.data);
-      setCurrentIndex(0);
-      setSelectedAnswer(null);
-      setResult(null);
-    } catch (err) {
-      console.error('Error loading questions:', err);
-      setError('Error al cargar las preguntas.');
-    } finally {
-      setLoading(false);
+  // Load questions based on filter
+  const loadQuestions = useCallback(async () => {
+    switch (filter) {
+      case 'failed':
+        return progressApi.getFailedQuestions();
+      case 'unanswered':
+        return progressApi.getUnansweredQuestions();
+      default:
+        // Get all questions from all topics
+        const topicsRes = await questionsApi.getTopics();
+        const allQuestions = [];
+        for (const topic of topicsRes.data) {
+          const questionsRes = await questionsApi.getQuestions(topic.id);
+          allQuestions.push(...questionsRes.data);
+        }
+        return { data: allQuestions };
     }
-  };
+  }, [filter]);
 
-  const handleSelectAnswer = (answer) => {
-    if (!result) {
-      setSelectedAnswer(answer);
-    }
-  };
-
-  const handleSolve = async () => {
-    if (!currentQuestion || !selectedAnswer) return;
-
-    setSolving(true);
-    setError(null);
-
-    try {
-      const solveRes = await solvingApi.solve(
-        currentQuestion.id,
-        currentQuestion.fullContent
-      );
-
-      const solution = solveRes.data;
-      setResult(solution);
-
-      await progressApi.recordAttempt({
-        questionId: currentQuestion.id,
-        userAnswer: selectedAnswer,
-        correctAnswer: solution.correctAnswer,
-        isCorrect: selectedAnswer === solution.correctAnswer,
-        explanation: solution.explanation,
-      });
-
+  // Create session with custom onSolve to refresh stats
+  const session = useQuestionSession({
+    loadQuestions,
+    onSolve: async () => {
       await loadStats();
-    } catch (err) {
-      console.error('Error solving question:', err);
-      setError('Error al obtener la respuesta.');
-    } finally {
-      setSolving(false);
     }
-  };
+  });
 
-  const goToQuestion = (index) => {
-    if (index >= 0 && index < questions.length) {
-      setCurrentIndex(index);
-      setSelectedAnswer(null);
-      setResult(null);
-    }
-  };
-
-  const goToPrevious = () => goToQuestion(currentIndex - 1);
-  const goToNext = () => goToQuestion(currentIndex + 1);
-
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-
-      switch (e.key) {
-        case 'ArrowLeft':
-          goToPrevious();
-          break;
-        case 'ArrowRight':
-          goToNext();
-          break;
-        case 'a':
-        case 'b':
-        case 'c':
-        case 'd':
-          if (!result) {
-            handleSelectAnswer(e.key);
-          }
-          break;
-        case 'Enter':
-          if (selectedAnswer && !result && !solving) {
-            handleSolve();
-          }
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentIndex, questions.length, selectedAnswer, result, solving]);
-
-  return (
-    <div className="review-mode">
-      <div className="review-header">
-        <div className="review-title-row">
-          <Link to="/" className="back-link">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            Volver
-          </Link>
-          <h1 className="page-title">Modo Repaso</h1>
-        </div>
-        <p className="page-subtitle">
-          Repasa las preguntas que necesitas practicar
-        </p>
+  // Custom header
+  const header = (
+    <div className="review-header">
+      <div className="review-title-row">
+        <Link to="/" className="back-link">
+          Volver
+        </Link>
+        <h1 className="page-title">Modo Repaso</h1>
       </div>
+      <p className="page-subtitle">
+        Repasa las preguntas que necesitas practicar
+      </p>
+    </div>
+  );
 
+  // Stats panel before questions
+  const beforeQuestion = (
+    <>
       {stats && <StatsPanel stats={stats} compact />}
 
       {/* Filter buttons */}
@@ -203,135 +99,80 @@ function ReviewMode() {
           ))}
         </div>
       </div>
+    </>
+  );
 
-      {/* Loading state */}
-      {loading && (
-        <div className="card">
-          <div className="card-body">
-            <div className="skeleton skeleton-text" style={{ width: '40%' }}></div>
-            <div className="skeleton skeleton-text"></div>
-            <div className="skeleton skeleton-text" style={{ width: '70%' }}></div>
-          </div>
-        </div>
-      )}
+  // Topic indicator when showing question
+  const questionTopicIndicator = session.currentQuestion ? (
+    <div className="review-progress">
+      <span className="question-topic">
+        {session.currentQuestion.topic}
+      </span>
+    </div>
+  ) : null;
 
-      {/* Error state */}
-      {error && !loading && (
-        <div className="alert alert-error">{error}</div>
-      )}
-
-      {/* Empty state */}
-      {!loading && !error && questions.length === 0 && (
-        <div className="card">
-          <div className="card-body">
-            <div className="empty-state">
-              <div className="empty-state-icon">
-                {filter === 'failed' ? (
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                  </svg>
-                ) : (
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                  </svg>
-                )}
-              </div>
-              <h3 className="empty-state-title">
-                {filter === 'failed'
-                  ? 'No hay preguntas falladas'
-                  : filter === 'unanswered'
-                  ? 'Todas las preguntas han sido respondidas'
-                  : 'No hay preguntas disponibles'}
-              </h3>
-              <p className="empty-state-description">
-                {filter === 'failed'
-                  ? 'Excelente! No tienes preguntas incorrectas para repasar.'
-                  : filter === 'unanswered'
-                  ? 'Has respondido todas las preguntas. Puedes ver las falladas para repasar.'
-                  : 'No se encontraron preguntas.'}
-              </p>
-              {filter !== 'all' && (
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setFilter('all')}
-                >
-                  Ver todas las preguntas
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Question */}
-      {!loading && !error && questions.length > 0 && (
-        <>
-          <div className="review-progress">
-            <span className="progress-text">
-              Pregunta {currentIndex + 1} de {questions.length}
-            </span>
-            {currentQuestion && (
-              <span className="question-topic">
-                {currentQuestion.topic}
-              </span>
+  // Custom empty state based on filter
+  const emptyState = (
+    <div className="card">
+      <div className="card-body">
+        <div className="empty-state">
+          <div className="empty-state-icon">
+            {filter === 'failed' ? (
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            ) : (
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
             )}
           </div>
-
-          <QuestionCard
-            question={currentQuestion}
-            selectedAnswer={selectedAnswer}
-            onSelectAnswer={handleSelectAnswer}
-            result={result}
-            disabled={solving}
-          />
-
-          {!result && (
-            <div className="question-actions">
-              <SolveButton
-                onClick={handleSolve}
-                disabled={!selectedAnswer}
-                loading={solving}
-              />
-            </div>
-          )}
-
-          {result && (
-            <AnswerPanel
-              result={result}
-              userAnswer={selectedAnswer}
-              question={currentQuestion}
-            />
-          )}
-
-          {/* Navigation */}
-          <div className="review-navigation">
+          <h3 className="empty-state-title">
+            {filter === 'failed'
+              ? 'No hay preguntas falladas'
+              : filter === 'unanswered'
+              ? 'Todas las preguntas han sido respondidas'
+              : 'No hay preguntas disponibles'}
+          </h3>
+          <p className="empty-state-description">
+            {filter === 'failed'
+              ? 'Excelente! No tienes preguntas incorrectas para repasar.'
+              : filter === 'unanswered'
+              ? 'Has respondido todas las preguntas. Puedes ver las falladas para repasar.'
+              : 'No se encontraron preguntas.'}
+          </p>
+          {filter !== 'all' && (
             <button
               className="btn btn-secondary"
-              onClick={goToPrevious}
-              disabled={currentIndex === 0}
+              onClick={() => setFilter('all')}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
-              Anterior
+              Ver todas las preguntas
             </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
-            <button
-              className="btn btn-secondary"
-              onClick={goToNext}
-              disabled={currentIndex === questions.length - 1}
-            >
-              Siguiente
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </>
-      )}
+  return (
+    <div className="review-mode">
+      <QuestionSession
+        session={session}
+        header={header}
+        beforeQuestion={
+          <>
+            {beforeQuestion}
+            {questionTopicIndicator}
+          </>
+        }
+        showProgress={false}
+        showNavigation={true}
+        showQuickNav={false}
+        emptyState={emptyState}
+      />
     </div>
   );
 }

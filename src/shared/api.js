@@ -233,6 +233,46 @@ export const subjectsApi = {
     };
   },
 
+  // Start exam mode - get random questions from all topics
+  startExamMode: async (subjectId, { count = 20, excludeAnswered = false } = {}) => {
+    const params = new URLSearchParams();
+    if (count) params.append('count', count);
+    if (excludeAnswered) params.append('excludeAnswered', 'true');
+
+    const res = await api.get(`/subjects/${subjectId}/exam-mode?${params}`);
+    return {
+      ...res,
+      data: res.data?.data ? {
+        sessionId: res.data.data.sessionId,
+        questions: (res.data.data.questions || []).map(transformQuestion),
+        totalQuestions: res.data.data.totalQuestions,
+        totalAvailable: res.data.data.totalAvailable,
+        excludedCount: res.data.data.excludedCount
+      } : null
+    };
+  },
+
+  // Start adaptive mode - prioritizes unseen and failed questions
+  startAdaptiveMode: async (subjectId, { count = 20 } = {}) => {
+    const params = new URLSearchParams();
+    if (count) params.append('count', count);
+
+    const res = await api.get(`/subjects/${subjectId}/adaptive-mode?${params}`);
+    return {
+      ...res,
+      data: res.data?.data ? {
+        sessionId: res.data.data.sessionId,
+        questions: (res.data.data.questions || []).map(q => ({
+          ...transformQuestion(q),
+          priorityScore: q.priority_score,
+          lastAttempt: q.last_attempt
+        })),
+        totalQuestions: res.data.data.totalQuestions,
+        stats: res.data.data.stats
+      } : null
+    };
+  },
+
   // Create a subject
   createSubject: async (subject) => {
     const res = await api.post('/subjects', subject);

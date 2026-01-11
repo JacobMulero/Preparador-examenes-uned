@@ -53,10 +53,16 @@ function SubjectDashboard() {
           <h1>{subject.name}</h1>
           <p className="subject-description">{subject.description}</p>
           <div className="subject-actions">
-            <Link to={`/practice/${subjectId}`} className="btn btn-primary btn-sm">
+            <Link to={`/subjects/${subjectId}/exam`} className="btn btn-primary btn-sm">
+              Modo Examen
+            </Link>
+            <Link to={`/subjects/${subjectId}/adaptive`} className="btn btn-success btn-sm">
+              Modo Adaptativo
+            </Link>
+            <Link to={`/practice/${subjectId}`} className="btn btn-secondary btn-sm">
               Practicar
             </Link>
-            <Link to={`/pipeline/${subjectId}`} className="btn btn-secondary btn-sm">
+            <Link to={`/pipeline/${subjectId}`} className="btn btn-outline btn-sm">
               Pipeline PDFs
             </Link>
             {subject.modes?.includes('verification') && (
@@ -79,10 +85,16 @@ function SubjectDashboard() {
         <h1>{subject.name}</h1>
         <p className="subject-description">{subject.description}</p>
         <div className="subject-actions">
-          <Link to={`/practice/${subjectId}`} className="btn btn-primary btn-sm">
+          <Link to={`/subjects/${subjectId}/exam`} className="btn btn-primary btn-sm">
+            Modo Examen
+          </Link>
+          <Link to={`/subjects/${subjectId}/adaptive`} className="btn btn-success btn-sm">
+            Modo Adaptativo
+          </Link>
+          <Link to={`/practice/${subjectId}`} className="btn btn-secondary btn-sm">
             Practicar
           </Link>
-          <Link to={`/pipeline/${subjectId}`} className="btn btn-secondary btn-sm">
+          <Link to={`/pipeline/${subjectId}`} className="btn btn-outline btn-sm">
             Pipeline PDFs
           </Link>
           {subject.modes?.includes('verification') && (

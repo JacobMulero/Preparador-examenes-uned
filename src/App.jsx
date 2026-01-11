@@ -5,6 +5,8 @@ import SubjectDashboard from './subjects/SubjectDashboard';
 import TopicSelector from './questions/TopicSelector';
 import QuestionList from './questions/QuestionList';
 import ReviewMode from './progress/ReviewMode';
+import ExamMode from './exam/ExamMode';
+import AdaptiveMode from './adaptive/AdaptiveMode';
 import PipelineDashboard from './pipeline/PipelineDashboard';
 import QuestionReview from './pipeline/QuestionReview';
 import PracticeSetup from './practice/PracticeSetup';
@@ -36,6 +38,14 @@ function App() {
         <Route path="/subjects/:subjectId/verification" element={<VerificationSetupPage />} />
         <Route path="/subjects/:subjectId/verification/:sessionId" element={<VerificationSession />} />
         <Route path="/subjects/:subjectId/verification/:sessionId/results" element={<VerificationResults />} />
+
+        {/* Fase 5: Modo Examen */}
+        <Route path="/exam" element={<ExamMode />} />
+        <Route path="/subjects/:subjectId/exam" element={<ExamMode />} />
+
+        {/* Fase 5: Modo Adaptativo */}
+        <Route path="/adaptive" element={<AdaptiveMode />} />
+        <Route path="/subjects/:subjectId/adaptive" element={<AdaptiveMode />} />
 
         {/* Compatibilidad hacia atras: redirigir rutas antiguas a BDA */}
         <Route path="/topics" element={<Navigate to="/subjects/bda" replace />} />

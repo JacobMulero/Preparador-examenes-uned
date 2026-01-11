@@ -1,0 +1,319 @@
+/* ===========================================
+   Adaptive Mode Styles
+   =========================================== */
+
+.adaptive-mode {
+  width: 100%;
+}
+
+/* Header */
+.adaptive-header {
+  margin-bottom: var(--space-5);
+}
+
+.adaptive-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.adaptive-header .back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.adaptive-header .back-link:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.adaptive-header .back-link::before {
+  content: '\2190';
+  margin-right: var(--space-1);
+}
+
+.adaptive-header .page-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.adaptive-header .page-subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Configuration Card */
+.adaptive-config {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.config-card {
+  margin-top: var(--space-5);
+}
+
+.config-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-5);
+}
+
+.config-option {
+  margin-bottom: var(--space-5);
+}
+
+.config-option > label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+}
+
+/* Count selector buttons */
+.count-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.count-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 40px;
+  padding: 0 var(--space-3);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.count-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.count-btn.active {
+  background-color: var(--accent-purple, #8b5cf6);
+  border-color: var(--accent-purple, #8b5cf6);
+  color: white;
+}
+
+/* Adaptive info section */
+.adaptive-info {
+  padding: var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-5);
+}
+
+.adaptive-info h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.adaptive-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.adaptive-info li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Priority badges */
+.priority-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.priority-new {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: var(--accent-blue);
+}
+
+.priority-failed {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--accent-red, #ef4444);
+}
+
+.priority-mastered {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: var(--accent-green, #22c55e);
+}
+
+/* Stats summary with colors */
+.stats-summary {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-5);
+}
+
+.stats-summary .stat-item {
+  flex: 1;
+  text-align: center;
+}
+
+.stats-summary .stat-value {
+  display: block;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stats-summary .stat-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Colored stat items */
+.stat-new .stat-value {
+  color: var(--accent-blue);
+}
+
+.stat-failed .stat-value {
+  color: var(--accent-red, #ef4444);
+}
+
+.stat-mastered .stat-value {
+  color: var(--accent-green, #22c55e);
+}
+
+/* Start button */
+.start-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: 16px;
+  padding: var(--space-4) var(--space-6);
+}
+
+/* Question info during session */
+.adaptive-question-info {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+}
+
+.question-topic-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-blue);
+  background-color: rgba(59, 130, 246, 0.1);
+  border-radius: var(--radius-full);
+}
+
+.adaptive-session-id {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  margin-left: auto;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: var(--space-8);
+}
+
+.empty-state-icon {
+  color: var(--accent-green, #22c55e);
+  margin-bottom: var(--space-4);
+}
+
+.empty-state-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.empty-state-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-5);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .stats-summary {
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .stats-summary .stat-item {
+    flex-basis: calc(50% - var(--space-2));
+    min-width: 0;
+  }
+
+  .stats-summary .stat-value {
+    font-size: 20px;
+  }
+
+  .count-selector {
+    justify-content: center;
+  }
+
+  .adaptive-question-info {
+    flex-wrap: wrap;
+  }
+
+  .adaptive-session-id {
+    width: 100%;
+    margin-left: 0;
+    margin-top: var(--space-2);
+  }
+}
