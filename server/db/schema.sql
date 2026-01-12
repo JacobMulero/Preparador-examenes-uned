@@ -43,10 +43,12 @@ CREATE TABLE IF NOT EXISTS questions (
   topic TEXT NOT NULL,                    -- Topic identifier: "Tema1", "Tema2", etc.
   question_number INTEGER NOT NULL,       -- Question number within the topic
   shared_statement TEXT,                  -- Shared statement if multiple questions share context
+  parent_question_id TEXT,                -- ID of parent question for context inheritance
   content TEXT NOT NULL,                  -- Full question text
   options TEXT NOT NULL,                  -- JSON array of options: {"a": "...", "b": "...", ...}
   parsed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
+  FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+  FOREIGN KEY (parent_question_id) REFERENCES questions(id) ON DELETE SET NULL
 );
 
 -- Attempts table: records user answer attempts

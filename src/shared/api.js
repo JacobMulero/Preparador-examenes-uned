@@ -59,13 +59,25 @@ function transformQuestion(q) {
     optionB: q.options?.b || '',
     optionC: q.options?.c || '',
     optionD: q.options?.d || '',
-    // Full content for Claude - includes statement + text + options
+    // Parent question context (for "Continuando con..." questions)
+    parentContent: q.parent_content || null,
+    parentStatement: q.parent_statement || null,
+    parentNumber: q.parent_number || null,
+    // Full content for Claude - includes parent + statement + text + options
     fullContent: buildFullContent(q)
   };
 }
 
 function buildFullContent(q) {
   let content = '';
+  // Include parent question context if exists
+  if (q.parent_content) {
+    content += `**Contexto (Pregunta anterior):**\n`;
+    if (q.parent_statement) {
+      content += `${q.parent_statement}\n\n`;
+    }
+    content += `${q.parent_content}\n\n---\n\n`;
+  }
   if (q.shared_statement) {
     content += `**Enunciado:** ${q.shared_statement}\n\n`;
   }

@@ -16,6 +16,14 @@ const db = new Database(DB_PATH);
 // Enable WAL mode for better concurrent performance
 db.pragma('journal_mode = WAL');
 
+// Run migrations on module load
+try {
+  db.exec('ALTER TABLE questions ADD COLUMN parent_question_id TEXT');
+  console.log('[Database] Migration: Added parent_question_id column');
+} catch (e) {
+  // Column already exists, ignore error
+}
+
 /**
  * Initialize database tables from schema.sql
  */
@@ -40,8 +48,8 @@ function initializeDatabase() {
  */
 function upsertQuestion(question) {
   const stmt = db.prepare(`
-    INSERT INTO questions (id, subject_id, topic, question_number, shared_statement, content, options, parsed_at)
-    VALUES (@id, @subject_id, @topic, @question_number, @shared_statement, @content, @options, CURRENT_TIMESTAMP)
+    INSERT INTO questions (id, subject_id, topic, question_number, shared_statement, content, options, parent_question_id, parsed_at)
+    VALUES (@id, @subject_id, @topic, @question_number, @shared_statement, @content, @options, @parent_question_id, CURRENT_TIMESTAMP)
     ON CONFLICT(id) DO UPDATE SET
       subject_id = @subject_id,
       topic = @topic,
@@ -49,6 +57,7 @@ function upsertQuestion(question) {
       shared_statement = @shared_statement,
       content = @content,
       options = @options,
+      parent_question_id = @parent_question_id,
       parsed_at = CURRENT_TIMESTAMP
   `);
 
@@ -59,7 +68,8 @@ function upsertQuestion(question) {
     question_number: question.question_number,
     shared_statement: question.shared_statement || null,
     content: question.content,
-    options: JSON.stringify(question.options)
+    options: JSON.stringify(question.options),
+    parent_question_id: question.parent_question_id || null
   });
 }
 
@@ -70,7 +80,15 @@ function upsertQuestion(question) {
  */
 function getQuestionsByTopic(topic, subjectId = 'bda') {
   const stmt = db.prepare(`
-    SELECT * FROM questions WHERE topic = ? AND subject_id = ? ORDER BY question_number
+    SELECT
+      q.*,
+      p.content as parent_content,
+      p.shared_statement as parent_statement,
+      p.question_number as parent_number
+    FROM questions q
+    LEFT JOIN questions p ON q.parent_question_id = p.id
+    WHERE q.topic = ? AND q.subject_id = ?
+    ORDER BY q.question_number
   `);
   const rows = stmt.all(topic, subjectId);
   return rows.map(row => ({
@@ -85,11 +103,20 @@ function getQuestionsByTopic(topic, subjectId = 'bda') {
  * @param {string} subjectId - Subject ID (optional, if not provided, returns any matching question)
  */
 function getQuestionById(id, subjectId = null) {
-  let query = 'SELECT * FROM questions WHERE id = ?';
+  let query = `
+    SELECT
+      q.*,
+      p.content as parent_content,
+      p.shared_statement as parent_statement,
+      p.question_number as parent_number
+    FROM questions q
+    LEFT JOIN questions p ON q.parent_question_id = p.id
+    WHERE q.id = ?
+  `;
   const params = [id];
 
   if (subjectId) {
-    query += ' AND subject_id = ?';
+    query += ' AND q.subject_id = ?';
     params.push(subjectId);
   }
 
@@ -125,14 +152,30 @@ function getRandomQuestion(topic = null, subjectId = 'bda') {
   let stmt;
   if (topic) {
     stmt = db.prepare(`
-      SELECT * FROM questions WHERE topic = ? AND subject_id = ? ORDER BY RANDOM() LIMIT 1
+      SELECT
+        q.*,
+        p.content as parent_content,
+        p.shared_statement as parent_statement,
+        p.question_number as parent_number
+      FROM questions q
+      LEFT JOIN questions p ON q.parent_question_id = p.id
+      WHERE q.topic = ? AND q.subject_id = ?
+      ORDER BY RANDOM() LIMIT 1
     `);
     const row = stmt.get(topic, subjectId);
     if (row) row.options = JSON.parse(row.options);
     return row;
   } else {
     stmt = db.prepare(`
-      SELECT * FROM questions WHERE subject_id = ? ORDER BY RANDOM() LIMIT 1
+      SELECT
+        q.*,
+        p.content as parent_content,
+        p.shared_statement as parent_statement,
+        p.question_number as parent_number
+      FROM questions q
+      LEFT JOIN questions p ON q.parent_question_id = p.id
+      WHERE q.subject_id = ?
+      ORDER BY RANDOM() LIMIT 1
     `);
     const row = stmt.get(subjectId);
     if (row) row.options = JSON.parse(row.options);

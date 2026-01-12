@@ -63,6 +63,23 @@ function QuestionCard({
       </div>
 
       <div className="card-body">
+        {/* Parent question context (for "Continuando con..." questions) */}
+        {question.parentContent && (
+          <div className="question-parent-context">
+            <div className="parent-context-label">
+              Pregunta {question.parentNumber} (contexto)
+            </div>
+            {question.parentStatement && (
+              <div className="parent-statement-content markdown-content">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{question.parentStatement}</ReactMarkdown>
+              </div>
+            )}
+            <div className="parent-content markdown-content">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{question.parentContent}</ReactMarkdown>
+            </div>
+          </div>
+        )}
+
         {/* Shared statement if exists */}
         {question.statement && (
           <div className="question-statement">
